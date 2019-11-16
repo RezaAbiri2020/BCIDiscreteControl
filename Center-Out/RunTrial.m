@@ -82,7 +82,7 @@ if ~Data.ErrorID && Params.InterTrialInterval>0,
                 Cursor.LastUpdateTime = tim;
                 
                 Data.NeuralTime(1,end+1) = tim;
-                [Neuro,Data] = NeuroPipeline(Neuro,Data);
+                [Neuro,Data] = NeuroPipeline(Neuro,Data,Params);
                 
             end
             
@@ -188,7 +188,7 @@ if ~Data.ErrorID && ~Params.CenterReset && TaskFlag>1,
             StartRect = Params.TargetRect; % centered at (0,0)
             StartRect([1,3]) = StartRect([1,3]) + StartTargetPos(1) + Params.Center(1); % add x-pos
             StartRect([2,4]) = StartRect([2,4]) + StartTargetPos(2) + Params.Center(2); % add y-pos
-            inFlag = InTarget(Cursor,StartTargetPos,Params.TargetSize);
+            inFlag = InTargetCenterOut(Cursor,StartTargetPos,Params.TargetSize);
             if inFlag, StartCol = Params.InTargetColor;
             else, StartCol = Params.OutTargetColor;
             end
@@ -324,7 +324,7 @@ if ~Data.ErrorID && Params.InstructedDelayTime>0,
             StartRect = Params.TargetRect; % centered at (0,0)
             StartRect([1,3]) = StartRect([1,3]) + StartTargetPos(1) + Params.Center(1); % add x-pos
             StartRect([2,4]) = StartRect([2,4]) + StartTargetPos(2) + Params.Center(2); % add y-pos
-            inFlag = InTarget(Cursor,StartTargetPos,Params.TargetSize);
+            inFlag = InTargetCenterOut(Cursor,StartTargetPos,Params.TargetSize);
             if inFlag, StartCol = Params.InTargetColor;
             else, StartCol = Params.OutTargetColor;
             end
@@ -448,7 +448,7 @@ if ~Data.ErrorID,
             ReachRect([2,4]) = ReachRect([2,4]) + ReachTargetPos(2) + Params.Center(2); % add y-pos
             
             % draw
-            inFlag = InTarget(Cursor,ReachTargetPos,Params.TargetSize);
+            inFlag = InTargetCenterOut(Cursor,ReachTargetPos,Params.TargetSize);
             if inFlag, ReachCol = Params.InTargetColor;
             else, ReachCol = Params.OutTargetColor;
             end

@@ -36,7 +36,7 @@ while 1, % pause until subject presses p again or quits
         Cursor.LastPredictTime = tim;
         
         % run neural pipeline, but don't save data
-        [Neuro,~] = NeuroPipeline(Neuro,[],Params);
+        [Neuro] = NeuroPipeline(Neuro,[],Params);
                 
     end
 end

@@ -18,7 +18,7 @@ AssertOpenGL;
 KbName('UnifyKeyNames');
 
 % Deal with inputs
-valid_tasks = {'Center-Out'};
+valid_tasks = {'Center-Out','GridTask'};
 assert(any(strcmp(Task,valid_tasks)), 'Unknown task')
 if ~exist('Subject','var'), Subject = 'Test'; DEBUG = 1; end
 if ~exist('ControlMode','var'), ControlMode = 2; end

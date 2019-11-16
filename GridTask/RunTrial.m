@@ -1,0 +1,224 @@
+function [Data, Neuro, KF, Params, Clicker] = RunTrial(Data,Params,Neuro,TaskFlag,KF,Clicker)
+% Runs a trial, saves useful data along the way
+% Each trial contains the following pieces
+% 1) Get the cursor to the reach target (different on each trial)
+% 2) Feedback
+
+global Cursor
+
+%% Set up trial
+ReachTargetPos = Data.TargetPosition;
+TargetID = 0; % Target that cursor is in, 0 for no targets
+
+% Output to Command Line
+fprintf('\nTrial: %i\n',Data.Trial)
+fprintf('  Target: %i\n',Data.TargetPosition)
+if Params.Verbose,
+    if TaskFlag==2,
+        fprintf('    Cursor Assistance: %.2f%%\n',100*Cursor.Assistance)
+        if Params.CLDA.Type==3,
+            fprintf('    Lambda 1/2 life: %.2fsecs\n',KF.Lambda)
+        end
+    end
+end
+
+% keep track of update times
+dt_vec = [];
+dT_vec = [];
+
+% grab blackrock data and run through processing pipeline
+if Params.BLACKROCK,
+    Cursor.LastPredictTime = GetSecs;
+    Cursor.LastUpdateTime = Cursor.LastPredictTime;
+    Neuro = NeuroPipeline(Neuro);
+end
+
+% reset cursor
+if Params.CenterReset,
+    Cursor.State = [0,0,0,0,1]';
+    Cursor.IntendedState = [0,0,0,0,1]';
+end
+
+%% Go to reach target
+if ~Data.ErrorID,
+    tstart  = GetSecs;
+    Data.Events(end+1).Time = tstart;
+    Data.Events(end).Str  = 'Reach Target';
+    if Params.ArduinoSync, PulseArduino(Params.ArduinoPtr,Params.ArduinoPin,length(Data.Events)); end
+    
+    if TaskFlag==1,
+        OptimalCursorTraj = [...
+            GenerateCursorTraj(Cursor.State,ReachTargetPos,Params.ImaginedMvmtTime,Params);
+            GenerateCursorTraj(ReachTargetPos,ReachTargetPos,Params.TargetHoldTime,Params)];
+        ct = 1;
+    end
+    
+    done = 0;
+    TotalTime = 0;
+    InTargetTotalTime = 0;
+    while ~done,
+        % Update Time & Position
+        tim = GetSecs;
+        
+        % for pausing and quitting expt
+        if CheckPause, [Neuro,Data,Params] = ExperimentPause(Params,Neuro,Data); end
+        
+        % Update Screen
+        if (tim-Cursor.LastPredictTime) > 1/Params.ScreenRefreshRate,
+            % time
+            dt = tim - Cursor.LastPredictTime;
+            TotalTime = TotalTime + dt;
+            dt_vec(end+1) = dt;
+            Cursor.LastPredictTime = tim;
+            Data.Time(1,end+1) = tim;
+            
+            % grab and process neural data
+            if ((tim-Cursor.LastUpdateTime)>1/Params.UpdateRate),
+                dT = tim-Cursor.LastUpdateTime;
+                dT_vec(end+1) = dT;
+                Cursor.LastUpdateTime = tim;
+                
+                Data.NeuralTime(1,end+1) = tim;
+                [Neuro,Data] = NeuroPipeline(Neuro,Data,Params);
+                
+                if Params.ClickerBins ~= -1,
+                    UpdateClicker(Params, Neuro, Clicker)
+                end
+                if all(Cursor.ClickState == 0), % not clicking -> update cursor state
+                    KF = UpdateCursor(Params,Neuro,TaskFlag,ReachTargetPos,KF);
+                end
+                % save kalman filter
+                if Params.ControlMode>=3 && TaskFlag>1 && Params.SaveKalmanFlag,
+                    Data.KalmanGain{end+1} = [];
+                    Data.KalmanGain{end}.K = KF.K;
+                    Data.KalmanFilter{end+1} = [];
+                    Data.KalmanFilter{end}.C = KF.C;
+                    Data.KalmanFilter{end}.Q = KF.Q;
+                    Data.KalmanFilter{end}.Lambda = KF.Lambda;
+                end
+            end
+            
+            % cursor
+            if TaskFlag==1, % imagined movements
+                Cursor.State(3:4) = (OptimalCursorTraj(ct,:)'-Cursor.State(1:2))/dt;
+                Cursor.State(1:2) = OptimalCursorTraj(ct,:);
+                Cursor.Vcommand = Cursor.State(3:4);
+                ct = ct + 1;
+            end
+            CursorRect = Params.CursorRect;
+            CursorRect([1,3]) = CursorRect([1,3]) + Cursor.State(1) + Params.Center(1); % add x-pos
+            CursorRect([2,4]) = CursorRect([2,4]) + Cursor.State(2) + Params.Center(2); % add y-pos
+            Data.CursorState(:,end+1) = Cursor.State;
+            Data.IntendedCursorState(:,end+1) = Cursor.IntendedState;
+            Data.CursorAssist(1,end+1) = Cursor.Assistance;
+            Data.ClickerState(1,end+1) = Cursor.ClickState;
+            
+            % reach target
+            GridCol = repmat(Params.GridColor,Params.NumReachTargets,1);
+            GridCol(Data.TargetID,:) = Params.OutTargetColor; % cue
+            TargetID = InTarget(Cursor,Params.ReachTargetPositions,Params.TargetSize);
+            if Params.ClickerBins == -1, % not using clicker, use col to show inTarget
+                if TargetID == Data.TargetID,
+                    CursorCol = Params.InTargetColor;
+                else,
+                    CursorCol = Params.CursorColor;
+                end
+            else, % use cursor color to indicate clicking
+                if Cursor.ClickState>0,
+                    CursorCol = Params.InTargetColor;
+                else,
+                    CursorCol = Params.CursorColor;
+                end
+            end
+            
+            % start counting time if cursor is in target
+            if TargetID==Data.TargetID,
+                InTargetTotalTime = InTargetTotalTime + dt;
+            else
+                InTargetTotalTime = 0;
+            end
+            
+            % draw
+            GridRect = Params.ReachTargetWindows;
+            GridRect(:,[1,3]) = GridRect(:,[1,3]) + Params.Center(1); % add x-pos
+            GridRect(:,[2,4]) = GridRect(:,[2,4]) + Params.Center(2); % add y-pos
+            
+            Screen('FillRect', Params.WPTR, ...
+               GridCol', GridRect');
+            if Params.ShowNextTarget,
+                FrameRect = GridRect(Data.NextTargetID,:);
+                Screen('FrameRect', Params.WPTR, ...
+                    Params.OutTargetColor', FrameRect', Params.FrameSize);
+            end
+            Screen('FillOval', Params.WPTR, ...
+                CursorCol', CursorRect')
+            
+            Screen('DrawingFinished', Params.WPTR);
+            Screen('Flip', Params.WPTR);
+            
+        end
+        
+        % end if takes too long
+        if TotalTime > Params.MaxReachTime,
+            done = 1;
+            Data.ErrorID = 3;
+            Data.ErrorStr = 'ReachTarget';
+            Data.SelectedTargetID = 0;
+            Data.SelectedTargetPosition = NaN;
+            fprintf('ERROR: %s\n',Data.ErrorStr)
+        end
+        
+        % end if clicks in a target
+        if Cursor.ClickState==Params.ClickerBins && TargetID~=0,
+            done = 1;
+            Data.SelectedTargetID = TargetID;
+            Data.SelectedTargetPosition = Params.ReachTargetPositions(TargetID,:);
+            if TargetID~=Data.TargetID,
+                Data.ErrorID = 4;
+                Data.ErrorStr = 'WrongTarget';
+            end
+        end
+        
+        % end if in target for hold time (not using clicker)
+        if (InTargetTotalTime>=Params.TargetHoldTime) && (Params.ClickerBins~=-1),
+            done = 1;
+            Data.SelectedTargetID = TargetID;
+            Data.SelectedTargetPosition = Params.ReachTargetPositions(TargetID,:);
+        end
+        
+    end % Reach Target Loop
+end % only complete if no errors
+
+
+%% Completed Trial - Give Feedback
+
+% output update times
+if Params.Verbose,
+    fprintf('      Screen Update: Goal=%iHz, Actual=%.2fHz (+/-%.2fHz)\n',...
+        Params.ScreenRefreshRate,mean(1./dt_vec),std(1./dt_vec))
+    fprintf('      System Update: Goal=%iHz, Actual=%.2fHz (+/-%.2fHz)\n',...
+        Params.UpdateRate,mean(1./dT_vec),std(1./dT_vec))
+end
+
+% output feedback
+if Data.ErrorID==0,
+    fprintf('SUCCESS\n')
+    if Params.FeedbackSound,
+        sound(Params.RewardSound,Params.RewardSoundFs)
+    end
+else,
+    % reset cursor
+    Cursor.ClickState = 0;
+    
+    fprintf('ERROR: %s\n', Data.ErrorStr)
+    
+    if Params.FeedbackSound,
+        sound(Params.ErrorSound,Params.ErrorSoundFs)
+    end
+    WaitSecs(Params.ErrorWaitTime);
+end
+
+end % RunTrial
+
+
+
