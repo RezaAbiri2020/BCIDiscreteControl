@@ -40,6 +40,10 @@ Params.MaxVelocity              = 200;
 %% Cursor Click
 Params.ClickerBins = 1; % set to -1 to use target hold time instead of click
 Params.DecisionBoundary= -0.5;
+Params.ClickerDataCollection = true; % if true, does not use clicker, freezes cursor when in target
+if Params.ClickerDataCollection,
+    Params.ClickerBins = -1; % must override to not use clicker
+end
 
 %% Current Date and Time
 % get today's date
@@ -68,7 +72,7 @@ Params.ScreenRefreshRate = 10; % Hz
 Params.UpdateRate = 10; % Hz
 
 %% Targets
-Params.ShowNextTarget   = true; % displays next target as a frame
+Params.ShowNextTarget   = false; % displays next target as a frame
 Params.FrameSize        = 5;
 Params.TargetSize       = 40;
 Params.TargetSpacing    = Params.TargetSize*2+10;

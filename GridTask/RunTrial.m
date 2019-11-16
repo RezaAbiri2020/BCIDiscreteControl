@@ -85,7 +85,13 @@ if ~Data.ErrorID,
                     UpdateClicker(Params, Neuro, Clicker)
                 end
                 if all(Cursor.ClickState == 0), % not clicking -> update cursor state
-                    KF = UpdateCursor(Params,Neuro,TaskFlag,ReachTargetPos,KF);
+                    % freeze cursor for clicker data collect mode
+                    if Params.ClickerDataCollection && ...
+                            InTarget(Cursor,Params.ReachTargetPositions,Params.TargetSize)==Data.TargetID,
+                        Cursor.State(3:4) = 0;
+                    else,
+                        KF = UpdateCursor(Params,Neuro,TaskFlag,ReachTargetPos,KF);
+                    end
                 end
                 % save kalman filter
                 if Params.ControlMode>=3 && TaskFlag>1 && Params.SaveKalmanFlag,
@@ -180,7 +186,7 @@ if ~Data.ErrorID,
         end
         
         % end if in target for hold time (not using clicker)
-        if (InTargetTotalTime>=Params.TargetHoldTime) && (Params.ClickerBins~=-1),
+        if (InTargetTotalTime>=Params.TargetHoldTime) && (Params.ClickerBins==-1),
             done = 1;
             Data.SelectedTargetID = TargetID;
             Data.SelectedTargetPosition = Params.ReachTargetPositions(TargetID,:);
