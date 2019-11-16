@@ -8,7 +8,7 @@ function Params = GetParams(Params)
 Params.Verbose = true;
 
 %% Experiment
-Params.Task = 'GridTask';
+Params.Task = 'RadialTask';
 switch Params.ControlMode,
     case 1, Params.ControlModeStr = 'MousePosition';
     case 2, Params.ControlModeStr = 'MouseVelocity';
@@ -38,9 +38,9 @@ Params.MaxVelocityFlag          = false;
 Params.MaxVelocity              = 200;
 
 %% Cursor Click
-Params.ClickerBins = 1; % set to -1 to use target hold time instead of click
+Params.ClickerBins = -1; % set to -1 to use target hold time instead of click
 Params.DecisionBoundary= -0.5;
-Params.ClickerDataCollection = true; % if true, does not use clicker, freezes cursor when in target
+Params.ClickerDataCollection = false; % if true, does not use clicker, freezes cursor when in target
 if Params.ClickerDataCollection,
     Params.ClickerBins = -1; % must override to not use clicker
 end
@@ -69,31 +69,39 @@ Params.ArduinoSync = false;
 Params.ScreenRefreshRate = 10; % Hz
 Params.UpdateRate = 10; % Hz
 
-%% Targets
-Params.ShowNextTarget   = false; % displays next target as a frame
-Params.FrameSize        = 5;
-Params.TargetSize       = 40;
-Params.TargetSpacing    = Params.TargetSize*2+10;
+%% Targets: radial layout
+Params.NumReachTargets   = 8;
+Params.TargetSpacing     = 10; % px
+Params.OuterCircleRadius = 300; % defines outer edge of target
+Params.InnerCircleRadius = 50; % defines inner edge of target
+Params.ReachTargetRadius = .5*(Params.InnerCircleRadius + Params.OuterCircleRadius);
 
-Params.GridColor        = [100,100,100];
-Params.OutTargetColor   = [55,255,0];
+Params.TargetsColor        = [100,100,100]; % all targets
+Params.CuedTargetColor   = [55,255,0]; % cued target
 
-Params.GridLayout = [4,4 ]; % [rows x cols]
-top_left = -(Params.GridLayout-1)/2;
-sp = Params.TargetSpacing;
-sz = Params.TargetSize;
-
-ct = 0;
-for i=1:Params.GridLayout(1),
-    for ii=1:Params.GridLayout(2),
-        ct = ct + 1;
-        x = sp*(top_left(2) + (ii-1));
-        y = sp*(top_left(1) + (i-1));
-        Params.ReachTargetPositions(ct,:) = [x,y];
-        Params.ReachTargetWindows(ct,:) = [x-sz y-sz x+sz y+sz];
-    end
+% triangles
+da = 360/Params.NumReachTargets; % degrees btw target centers
+b = da/2; % degrees btw targets edges
+Params.ReachTargetAngles = 0:da:(360-da);
+for i=1:Params.NumReachTargets,
+    a = Params.ReachTargetAngles(i);
+    Params.ReachTargetPositions(i,:) = ...
+        Params.ReachTargetRadius * [cosd(a) sind(a)]; % center of targets
+    
+    Params.ReachTargetVerts{i} = ...
+        Params.OuterCircleRadius .* ...
+        [0, 0
+        cosd(a-b) sind(a-b)
+        cosd(a+b) sind(a+b)];
 end
-Params.NumReachTargets = ct;
+
+% inner circle
+sz = Params.InnerCircleRadius;
+Params.InnerCircleColor = 0;
+Params.InnerCircleRect = [-sz, -sz, sz, sz];
+
+% useful for optimal cursor updates, not used for targets here
+Params.TargetSize = Params.OuterCircleRadius - Params.InnerCircleRadius;
 
 %% Cursor
 Params.CursorColor = [0,102,255];
@@ -106,8 +114,8 @@ Params.CursorRect = [-Params.CursorSize -Params.CursorSize ...
 Params.SaveKalmanFlag = false; % if true, saves kf at each time bin, if false, saves kf 1x per trial
 G = Params.Gain;
 t = 1/Params.UpdateRate;
-a = 0.85;%.825;
-w = 150;
+a = 0.91;%.825;
+w = 120;
 if Params.ControlMode>=3,
     Params.KF.A = [...
         1	0	G*t	0	0;
@@ -168,8 +176,8 @@ Params.DrawVelCommand.Rect = [-425,-425,-350,-350];
 %% Trial and Block Types
 Params.NumImaginedBlocks    = 0;
 Params.NumAdaptBlocks       = 0;
-Params.NumFixedBlocks       = 1;
-Params.NumTrialsPerBlock    = 10;
+Params.NumFixedBlocks       = 2;
+Params.NumTrialsPerBlock    = 8;
 
 %% CLDA Parameters
 TypeStrs                = {'none','refit','smooth_batch','rml'};
@@ -212,11 +220,11 @@ switch Params.CLDA.AdaptType,
 end
 
 %% Hold Times
-Params.TargetHoldTime = .6;
+Params.TargetHoldTime = .5;
 Params.InterTrialInterval = 1;
 Params.InstructedDelayTime = 0;
 Params.MaxStartTime = 25;
-Params.MaxReachTime = 12;
+Params.MaxReachTime = 15;
 Params.InterBlockInterval = 10; % 0-10s, if set to 10 use instruction screen
 Params.ImaginedMvmtTime = 3;
 
@@ -432,5 +440,7 @@ else,
     Params.FeatureMask = Mask==1;
 
 end
+
+
 
 end % GetParams

@@ -84,15 +84,17 @@ if ~Data.ErrorID,
                 if Params.ClickerBins ~= -1,
                     UpdateClicker(Params, Neuro, Clicker)
                 end
+                
                 if all(Cursor.ClickState == 0), % not clicking -> update cursor state
                     % freeze cursor for clicker data collect mode
                     if Params.ClickerDataCollection && ...
-                            InTargetGrid(Cursor,Params.ReachTargetPositions,Params.TargetSize)==Data.TargetID,
+                            InTargetRadial(Cursor,Params.ReachTargetVerts,Params.InnerCircleRadius)==Data.TargetID,
                         Cursor.State(3:4) = 0;
                     else,
                         KF = UpdateCursor(Params,Neuro,TaskFlag,ReachTargetPos,KF);
                     end
                 end
+                
                 % save kalman filter
                 if Params.ControlMode>=3 && TaskFlag>1 && Params.SaveKalmanFlag,
                     Data.KalmanGain{end+1} = [];
@@ -120,9 +122,9 @@ if ~Data.ErrorID,
             Data.ClickerState(1,end+1) = Cursor.ClickState;
             
             % reach target
-            GridCol = repmat(Params.GridColor,Params.NumReachTargets,1);
-            GridCol(Data.TargetID,:) = Params.OutTargetColor; % cue
-            TargetID = InTargetGrid(Cursor,Params.ReachTargetPositions,Params.TargetSize);
+            TargetsCol = repmat(Params.TargetsColor,Params.NumReachTargets,1);
+            TargetsCol(Data.TargetID,:) = Params.CuedTargetColor; % cue
+            TargetID = InTargetRadial(Cursor,Params.ReachTargetVerts,Params.InnerCircleRadius);
             if Params.ClickerBins == -1, % not using clicker, use col to show inTarget
                 if TargetID == Data.TargetID,
                     CursorCol = Params.InTargetColor;
@@ -144,24 +146,43 @@ if ~Data.ErrorID,
                 InTargetTotalTime = 0;
             end
             
-            % draw
-            GridRect = Params.ReachTargetWindows;
-            GridRect(:,[1,3]) = GridRect(:,[1,3]) + Params.Center(1); % add x-pos
-            GridRect(:,[2,4]) = GridRect(:,[2,4]) + Params.Center(2); % add y-pos
-            
-            Screen('FillRect', Params.WPTR, ...
-               GridCol', GridRect');
-            if Params.ShowNextTarget,
-                FrameRect = GridRect(Data.NextTargetID,:);
-                Screen('FrameRect', Params.WPTR, ...
-                    Params.OutTargetColor', FrameRect', Params.FrameSize);
+            % draw target triangles
+            for i=1:Params.NumReachTargets,
+                % center vertices to define triangle for each target
+                TargetVerts = Params.ReachTargetVerts{i};
+                TargetVerts(:,1) = TargetVerts(:,1) + Params.Center(1);
+                TargetVerts(:,2) = TargetVerts(:,2) + Params.Center(2);
+                
+                Screen('FillPoly', Params.WPTR, ...
+                    TargetsCol(i,:)', TargetVerts, 1);
+                Screen('FramePoly', Params.WPTR, ... % black frame around triangles
+                    0, TargetVerts, Params.TargetSpacing);
             end
+            
+            % draw target circles
+            CircRect = Params.InnerCircleRect;
+            CircRect([1,3]) = CircRect([1,3]) + Params.Center(1); % add x-pos
+            CircRect([2,4]) = CircRect([2,4]) + Params.Center(2); % add y-pos
+            Screen('FillOval', Params.WPTR, ...
+                Params.InnerCircleColor, CircRect')
+            
+            % draw cursor
             Screen('FillOval', Params.WPTR, ...
                 CursorCol', CursorRect')
             
             Screen('DrawingFinished', Params.WPTR);
             Screen('Flip', Params.WPTR);
             
+        end
+        
+        % end if takes too long
+        if TotalTime > Params.MaxReachTime,
+            done = 1;
+            Data.ErrorID = 3;
+            Data.ErrorStr = 'ReachTarget';
+            Data.SelectedTargetID = 0;
+            Data.SelectedTargetPosition = NaN;
+            fprintf('ERROR: %s\n',Data.ErrorStr)
         end
         
         % end if takes too long
@@ -215,6 +236,9 @@ if Data.ErrorID==0,
 else,
     % reset cursor
     Cursor.ClickState = 0;
+    % reset cursor
+    Cursor.State = [0,0,0,0,1]';
+    Cursor.IntendedState = [0,0,0,0,1]';
     
     fprintf('ERROR: %s\n', Data.ErrorStr)
     

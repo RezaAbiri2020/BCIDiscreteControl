@@ -15,8 +15,8 @@ General Principles:
 
 ## Matlab Modules
 1. Tasks - control task flow in different environments
-	a. Center-Out
-	b. GridTask
+	1. Center-Out
+	2. GridTask
 2. taskhelpers - general tools to help with taskflow across task modules
 3. neuro - controls neural processing
 4. arduino - controls arduino for time-sync or exo system

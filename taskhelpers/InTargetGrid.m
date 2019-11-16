@@ -1,5 +1,5 @@
-function TargetID = InTarget(Cursor,Targets,TargetSize)
-% function inFlag = InTarget(Cursor,Targets,TargetSize)
+function TargetID = InTargetGrid(Cursor,Targets,TargetSize)
+% function inFlag = InTargetGrid(Cursor,Targets,TargetSize)
 % function to tell if cursor is inside any of the targets
 % 
 % Inputs:

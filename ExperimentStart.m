@@ -18,7 +18,7 @@ AssertOpenGL;
 KbName('UnifyKeyNames');
 
 % Deal with inputs
-valid_tasks = {'Center-Out','GridTask'};
+valid_tasks = {'Center-Out','GridTask','RadialTask'};
 assert(any(strcmp(Task,valid_tasks)), 'Unknown task')
 if ~exist('Subject','var'), Subject = 'Test'; DEBUG = 1; end
 if ~exist('ControlMode','var'), ControlMode = 2; end
@@ -37,13 +37,15 @@ else,
     butter(1,[.1,.5]);
 end
 
-% reset path, do not include other tasks
+% reset path
 rmpath(genpath(fullfile(projectdir)));
+% add non-task modules
 addpath(genpath(fullfile(projectdir,'arduino')));
 addpath(genpath(fullfile(projectdir,'audio')));
 addpath(genpath(fullfile(projectdir,'kalman_filter')));
 addpath(genpath(fullfile(projectdir,'neuro')));
 addpath(genpath(fullfile(projectdir,'taskhelpers')));
+% add task module
 addpath(genpath(fullfile(projectdir,Task)))
 
 %% Retrieve Parameters from Params File
