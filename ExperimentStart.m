@@ -18,7 +18,7 @@ AssertOpenGL;
 KbName('UnifyKeyNames');
 
 % Deal with inputs
-valid_tasks = {'Center-Out','GridTask','RadialTask'};
+valid_tasks = {'Center-Out','GridTask','RadialTask','RadialTyping'};
 assert(any(strcmp(Task,valid_tasks)), 'Unknown task')
 if ~exist('Subject','var'), Subject = 'Test'; DEBUG = 1; end
 if ~exist('ControlMode','var'), ControlMode = 2; end
@@ -45,6 +45,7 @@ addpath(genpath(fullfile(projectdir,'audio')));
 addpath(genpath(fullfile(projectdir,'kalman_filter')));
 addpath(genpath(fullfile(projectdir,'neuro')));
 addpath(genpath(fullfile(projectdir,'taskhelpers')));
+addpath(genpath(fullfile(projectdir,'typing_env')));
 % add task module
 addpath(genpath(fullfile(projectdir,Task)))
 
@@ -204,6 +205,12 @@ Params.Center = [mean(Params.ScreenRectangle([1,3])),mean(Params.ScreenRectangle
 % Font
 Screen('TextFont',Params.WPTR, 'Arial');
 Screen('TextSize',Params.WPTR, 28);
+
+%% Initialze keyboard
+typing_tasks = {'RadialTyping'};
+if any(strcmp(Task,typing_tasks)),
+    Params = SetKeyboardParams(Params);
+end
 
 %% Start
 try

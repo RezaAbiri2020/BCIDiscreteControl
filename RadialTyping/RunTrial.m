@@ -45,24 +45,24 @@ if ~Data.ErrorID,
     Data.Events(end+1).Time = tstart;
     Data.Events(end).Str  = 'Reach Target';
     if Params.ArduinoSync, PulseArduino(Params.ArduinoPtr,Params.ArduinoPin,length(Data.Events)); end
-    
+
     if TaskFlag==1,
         OptimalCursorTraj = [...
             GenerateCursorTraj(Cursor.State,ReachTargetPos,Params.ImaginedMvmtTime,Params);
             GenerateCursorTraj(ReachTargetPos,ReachTargetPos,Params.TargetHoldTime,Params)];
         ct = 1;
     end
-    
+
     done = 0;
     TotalTime = 0;
     InTargetTotalTime = 0;
     while ~done,
         % Update Time & Position
         tim = GetSecs;
-        
+
         % for pausing and quitting expt
         if CheckPause, [Neuro,Data,Params] = ExperimentPause(Params,Neuro,Data); end
-        
+
         % Update Screen
         if (tim-Cursor.LastPredictTime) > 1/Params.ScreenRefreshRate,
             % time
@@ -71,7 +71,7 @@ if ~Data.ErrorID,
             dt_vec(end+1) = dt;
             Cursor.LastPredictTime = tim;
             Data.Time(1,end+1) = tim;
-            
+
             % grab and process neural data
             if ((tim-Cursor.LastUpdateTime)>1/Params.UpdateRate),
                 dT = tim-Cursor.LastUpdateTime;
@@ -105,7 +105,7 @@ if ~Data.ErrorID,
                     Data.KalmanFilter{end}.Lambda = KF.Lambda;
                 end
             end
-            
+
             % cursor
             if TaskFlag==1, % imagined movements
                 Cursor.State(3:4) = (OptimalCursorTraj(ct,:)'-Cursor.State(1:2))/dt;
@@ -120,16 +120,16 @@ if ~Data.ErrorID,
             Data.IntendedCursorState(:,end+1) = Cursor.IntendedState;
             Data.CursorAssist(1,end+1) = Cursor.Assistance;
             Data.ClickerState(1,end+1) = Cursor.ClickState;
-            
+
             % reach target
             TargetsCol = repmat(Params.TargetsColor,Params.NumReachTargets,1);
             TargetsCol(Data.TargetID,:) = Params.CuedTargetColor; % cue
             TargetID = InTargetRadial(Cursor,Params.ReachTargetVerts,Params.InnerCircleRadius);
-            if Params.ClickerBins == -1, % not using clicker, use col to show inTarget
-                if TargetID == Data.TargetID,
-                    CursorCol = Params.InTargetColor;
-                else,
+            if Params.ClickerBins == -1, % not using clicker
+                if TargetID == 0,
                     CursorCol = Params.CursorColor;
+                else,
+                    CursorCol = Params.InTargetColor;
                 end
             else, % use cursor color to indicate clicking
                 if Cursor.ClickState>0,
@@ -139,8 +139,8 @@ if ~Data.ErrorID,
                 end
             end
             
-            % start counting time if cursor is in target
-            if TargetID==Data.TargetID,
+            % start counting time if cursor is in any target
+            if TargetID~=0,
                 InTargetTotalTime = InTargetTotalTime + dt;
             else
                 InTargetTotalTime = 0;
@@ -152,29 +152,32 @@ if ~Data.ErrorID,
                 TargetVerts = Params.ReachTargetVerts{i};
                 TargetVerts(:,1) = TargetVerts(:,1) + Params.Center(1);
                 TargetVerts(:,2) = TargetVerts(:,2) + Params.Center(2);
-                
+
                 Screen('FillPoly', Params.WPTR, ...
                     TargetsCol(i,:)', TargetVerts, 1);
                 Screen('FramePoly', Params.WPTR, ... % black frame around triangles
                     0, TargetVerts, Params.TargetSpacing);
             end
-            
+
             % draw target circles
             CircRect = Params.InnerCircleRect;
             CircRect([1,3]) = CircRect([1,3]) + Params.Center(1); % add x-pos
             CircRect([2,4]) = CircRect([2,4]) + Params.Center(2); % add y-pos
             Screen('FillOval', Params.WPTR, ...
                 Params.InnerCircleColor, CircRect')
-            
+
             % draw cursor
             Screen('FillOval', Params.WPTR, ...
                 CursorCol', CursorRect')
             
+            % draw typing text here
+            Params = UpdateKeyboard(Params);
+            
             Screen('DrawingFinished', Params.WPTR);
             Screen('Flip', Params.WPTR);
-            
+
         end
-        
+
         % end if takes too long
         if TotalTime > Params.MaxReachTime,
             done = 1;
@@ -201,6 +204,14 @@ if ~Data.ErrorID,
             done = 1;
             Data.SelectedTargetID = TargetID;
             Data.SelectedTargetPosition = Params.ReachTargetPositions(TargetID,:);
+        end
+
+        % Typing
+        if done,
+            Params.Keyboard.State.TargetID = TargetID;
+            fprintf('\nTarget %i\n', TargetID)
+            Params = CheckKeys(Params);
+            Params = MakeSelection(Params);
         end
         
     end % Reach Target Loop
@@ -229,9 +240,9 @@ else,
     % reset cursor
     Cursor.State = [0,0,0,0,1]';
     Cursor.IntendedState = [0,0,0,0,1]';
-    
+
     fprintf('ERROR: %s\n', Data.ErrorStr)
-    
+
     if Params.FeedbackSound,
         sound(Params.ErrorSound,Params.ErrorSoundFs)
     end
@@ -239,6 +250,3 @@ else,
 end
 
 end % RunTrial
-
-
-
