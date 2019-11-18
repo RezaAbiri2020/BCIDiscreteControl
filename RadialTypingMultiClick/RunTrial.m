@@ -82,7 +82,7 @@ if ~Data.ErrorID,
                 [Neuro,Data] = NeuroPipeline(Neuro,Data,Params);
                 
                 if Params.ClickerBins ~= -1,
-                    UpdateClicker(Params, Neuro, Clicker)
+                    UpdateMultiClicker(Params, Neuro, Clicker)
                 end
                 
                 if all(Cursor.ClickState == 0), % not clicking -> update cursor state
@@ -119,22 +119,20 @@ if ~Data.ErrorID,
             Data.CursorState(:,end+1) = Cursor.State;
             Data.IntendedCursorState(:,end+1) = Cursor.IntendedState;
             Data.CursorAssist(1,end+1) = Cursor.Assistance;
-            Data.ClickerState(1,end+1) = Cursor.ClickState;
+            Data.ClickerState{1,end+1} = Cursor.ClickState;
 
             % reach target
             TargetsCol = repmat(Params.TargetsColor,Params.NumReachTargets,1);
-            if Params.CueTarget,
-                TargetsCol(Data.TargetID,:) = Params.CuedTargetColor; % cue
-            end
+            TargetsCol(Data.TargetID,:) = Params.CuedTargetColor; % cue
             TargetID = InTargetRadial(Cursor,Params.ReachTargetVerts,Params.InnerCircleRadius);
             if Params.ClickerBins == -1, % not using clicker
-                if TargetID == 0,
+                if TargetID ~= Data.TargetID, % only if not cued target
                     CursorCol = Params.CursorColor;
                 else,
                     CursorCol = Params.InTargetColor;
                 end
             else, % use cursor color to indicate clicking
-                if Cursor.ClickState>0,
+                if any(Cursor.ClickState>0),
                     CursorCol = Params.InTargetColor;
                 else,
                     CursorCol = Params.CursorColor;
@@ -142,7 +140,7 @@ if ~Data.ErrorID,
             end
             
             % start counting time if cursor is in any target
-            if TargetID~=0,
+            if TargetID==Data.TargetID,
                 InTargetTotalTime = InTargetTotalTime + dt;
             else
                 InTargetTotalTime = 0;
@@ -174,6 +172,10 @@ if ~Data.ErrorID,
             
             % draw typing text here
             Params = UpdateKeyboard(Params);
+            if Params.CueTextFlag,
+                DrawFormattedText(Params.WPTR, Data.TargetCharStr, ...
+                    'center', 'center', 255);
+            end
             
             Screen('DrawingFinished', Params.WPTR);
             Screen('Flip', Params.WPTR);
@@ -184,14 +186,14 @@ if ~Data.ErrorID,
         if TotalTime > Params.MaxReachTime,
             done = 1;
             Data.ErrorID = 3;
-            Data.ErrorStr = 'ReachTarget';
+            Data.ErrorStr = 'NoSelection';
             Data.SelectedTargetID = 0;
             Data.SelectedTargetPosition = NaN;
             fprintf('ERROR: %s\n',Data.ErrorStr)
         end
         
         % end if clicks in a target
-        if Cursor.ClickState==Params.ClickerBins && TargetID~=0,
+        if any(Cursor.ClickState==Params.ClickerBins) && TargetID~=0,
             done = 1;
             Data.SelectedTargetID = TargetID;
             Data.SelectedTargetPosition = Params.ReachTargetPositions(TargetID,:);
@@ -211,9 +213,19 @@ if ~Data.ErrorID,
         % Typing
         if done,
             Params.Keyboard.State.TargetID = TargetID;
-            fprintf('\nTarget %i\n', TargetID)
             Params = CheckKeys(Params);
-            Params = MakeSelection(Params);
+            Params = MakeSelectionMultiClick(Params);
+            if any(Cursor.ClickState==Params.ClickerBins),
+                % save selection in main data structure
+                Data.SelectedTargetCharID = find(Cursor.ClickState);
+                Data.SelectedTargetCharStr = Params.Keyboard.State.SelectedCharacters{end};
+            end
+            fprintf('  Selected Target %i\n', TargetID)
+            fprintf('  Selected Character %s\n', Data.SelectedTargetCharStr)
+            if (TargetID==Data.TargetID) && (Data.TargetCharID~=Data.SelectedTargetCharID),
+                Data.ErrorID = 5;
+                Data.ErrorStr = 'WrongCharacter';
+            end
         end
         
     end % Reach Target Loop
@@ -238,8 +250,7 @@ if Data.ErrorID==0,
     end
 else,
     % reset cursor
-    Cursor.ClickState = 0;
-    % reset cursor
+    Cursor.ClickState = zeros(1,Params.NumClickerClasses);
     Cursor.State = [0,0,0,0,1]';
     Cursor.IntendedState = [0,0,0,0,1]';
 

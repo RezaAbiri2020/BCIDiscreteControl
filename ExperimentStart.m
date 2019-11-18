@@ -18,7 +18,8 @@ AssertOpenGL;
 KbName('UnifyKeyNames');
 
 % Deal with inputs
-valid_tasks = {'Center-Out','GridTask','RadialTask','RadialTyping'};
+valid_tasks = {'Center-Out','GridTask','RadialTask','RadialTyping',...
+    'RadialTypingMultiClick'};
 assert(any(strcmp(Task,valid_tasks)), 'Unknown task')
 if ~exist('Subject','var'), Subject = 'Test'; DEBUG = 1; end
 if ~exist('ControlMode','var'), ControlMode = 2; end
@@ -196,7 +197,7 @@ end
 %% Initialize Window
 % Screen('Preference', 'SkipSyncTests', 0);
 if DEBUG
-    [Params.WPTR, Params.ScreenRectangle] = Screen('OpenWindow', 0, 0, [50 50 1000 1000]);
+    [Params.WPTR, Params.ScreenRectangle] = Screen('OpenWindow', 0, 0, [50 0 1750 1000]);
 else
     [Params.WPTR, Params.ScreenRectangle] = Screen('OpenWindow', max(Screen('Screens')), 0);
 end
@@ -207,7 +208,7 @@ Screen('TextFont',Params.WPTR, 'Arial');
 Screen('TextSize',Params.WPTR, 28);
 
 %% Initialze keyboard
-typing_tasks = {'RadialTyping'};
+typing_tasks = {'RadialTyping','RadialTypingMultiClick'};
 if any(strcmp(Task,typing_tasks)),
     Params = SetKeyboardParams(Params);
 end

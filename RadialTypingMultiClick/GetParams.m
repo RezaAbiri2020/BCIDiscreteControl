@@ -8,7 +8,7 @@ function Params = GetParams(Params)
 Params.Verbose = true;
 
 %% Experiment
-Params.Task = 'RadialTyping';
+Params.Task = 'RadialTypingMultiClick';
 switch Params.ControlMode,
     case 1, Params.ControlModeStr = 'MousePosition';
     case 2, Params.ControlModeStr = 'MouseVelocity';
@@ -29,8 +29,8 @@ Params.BaselineTime         = 0; % secs
 Params.BadChannels          = [];
 Params.SpatialFiltering     = false;
 Params.UseFeatureMask       = true;
-Params.CueTextFlag          = false;
-Params.CueTarget            = false;
+Params.CueTextFlag          = true;
+Params.CueTarget            = true;
 
 %% Cursor Velocity
 Params.Gain                     = 2; %10;
@@ -40,6 +40,7 @@ Params.MaxVelocityFlag          = false;
 Params.MaxVelocity              = 200;
 
 %% Cursor Click
+Params.NumClickerClasses = 2; % does not include the 'not clicking' class
 Params.ClickerBins = 1; % set to -1 to use target hold time instead of click
 Params.DecisionBoundary= -0.5;
 Params.ClickerDataCollection = false; % if true, does not use clicker, freezes cursor when in target
@@ -223,7 +224,7 @@ switch Params.CLDA.AdaptType,
 end
 
 %% Hold Times
-Params.TargetHoldTime = .5;
+Params.TargetHoldTime = 1.5;
 Params.InterTrialInterval = 1;
 Params.InstructedDelayTime = 0;
 Params.MaxStartTime = 25;

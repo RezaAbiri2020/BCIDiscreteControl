@@ -31,10 +31,9 @@ KP.TargetRect = [-KP.TargetWidth / 2, -KP.TargetHeight / 2, KP.TargetWidth / 2, 
 KP.CharColor     = [255, 255, 0];
 KP.WordColor     = [0, 150, 255];
 KP.NextWordColor = [0, 255, 150];
-KP.End.Color     = [0, 255, 0];
 
 %% Text
-KP.Text.CharacterSets = {'ABCD', 'MNOPQ', 'EFGH', 'RSTU', 'IJKL', 'VWXYZ'};
+KP.Text.CharacterSets = {'A B','A B','A B','A B','A B','A B','A B','A B'};
 KP.Text.CharDisplayOpts = {'FontSize', 25,...
                             'Offset', [10, 18],...
                              'Color', [170, 170, 170]};
@@ -54,14 +53,14 @@ KP.Text.WordSet = GetCorpus('N', KP.Text.CorpusSize);
 %% Keyboard layout
 % ix_F_Arrow = 1;
 % ix_B_Arrow = 5;
-[~, ix_F_Arrow] = max(Params.ReachTargetPositions(:, 1));
-[~, ix_B_Arrow] = min(Params.ReachTargetPositions(:, 1));
+ix_F_Arrow = [];
+ix_B_Arrow = [];
 KP.Pos = struct();
 KP.Pos.ArrowTargets = KP.TargetPosition([ix_F_Arrow, ix_B_Arrow], :);
-KP.Pos.ArrowLabels = {'Forward', 'Back'};
-KP.Pos.TextTargets = sortrows([KP.TargetPosition(2:4, :); KP.TargetPosition(6:8, :)]);
-KP.Pos.F_Arrow = KP.Pos.ArrowTargets(1, :) + [0.5 * KP.TargetWidth / 2, 0];
-KP.Pos.B_Arrow = KP.Pos.ArrowTargets(2, :) - [0.5 * KP.TargetWidth / 2, 0];
+KP.Pos.ArrowLabels = {};
+KP.Pos.TextTargets = KP.TargetPosition;
+KP.Pos.F_Arrow = [];
+KP.Pos.B_Arrow = [];
 KP.Pos.TargetEdges = (repmat(KP.TargetPosition, 1, 2) + KP.TargetRect)';
 [~, ix_top_targ] = min(KP.TargetPosition(:, 2));
 [~, ix_right_targ] = max(KP.TargetPosition(:, 1));
@@ -73,9 +72,12 @@ ix_end_targets = [ix_F_Arrow, ix_B_Arrow, ix_top_targ];
 KP.End.Targets = KP.TargetPosition(ix_end_targets, :);
 KP.End.TargetLabels = {'CONTINUE', 'STOP', 'Reset'};
 KP.End.TargetEdges = KP.Pos.TargetEdges(:, ix_end_targets);
+KP.End.Color = [0, 255, 0;
+                255, 0, 0;
+                0, 150, 255]';
 
 % Word Box
-KP.ShowWordBox = true;
+KP.ShowWordBox = false;
 KP.Pos.WordBox.H = KP.TargetHeight * 1.5;
 KP.Pos.WordBox.W = KP.TargetWidth;
 KP.Pos.WordBox.O = [KP.TargetPosition(ix_right_targ, 1), KP.TargetPosition(ix_top_targ, 2)] + [KP.TargetWidth, 0];
@@ -107,8 +109,7 @@ KP.State.WordMatches = 1:length(KP.Text.WordSet);
 KP.State.TargetID = 0;
 
 % Override target color
-Params.TargetsColor        = KP.State.CurrentColor; % all targets
-Params.CuedTargetColor   = KP.State.CurrentColor; % cued target
+Params.TargetsColor         = KP.State.CurrentColor; % all targets
 
 % Keyboard State History
 KP.History.State = {};
