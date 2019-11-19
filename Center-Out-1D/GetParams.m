@@ -8,6 +8,7 @@ function Params = GetParams(Params)
 Params.Verbose = true;
 
 %% Experiment
+Params.Task = 'Center-Out-1D';
 switch Params.ControlMode,
     case 1, Params.ControlModeStr = 'MousePosition';
     case 2, Params.ControlModeStr = 'MouseVelocity';
@@ -18,7 +19,7 @@ end
 %% Control
 Params.CenterReset      = false; % if true, cursor automatically is at center at trial start
 Params.Assistance       = 0; %0.05; % value btw 0 and 1, 1 full assist
-Params.DaggerAssist 	= true;
+Params.DaggerAssist 	= false;
 
 Params.CLDA.Type        = 3; % 0-none, 1-refit, 2-smooth batch, 3-RML
 Params.CLDA.AdaptType   = 'linear'; % {'none','linear'}, affects assistance & lambda for rml
@@ -29,9 +30,11 @@ Params.BadChannels          = [];
 Params.SpatialFiltering     = false;
 Params.UseFeatureMask       = true;
 
+Params.MvmtAxisAngle    = 45;
+
 %% Cursor Velocity
-Params.Gain                     = 2;
-Params.OptimalVeloctityMode     = 1; % 1-vector to target, 2-LQR
+Params.Gain                     = 1;
+Params.OptimalVeloctityMode     = 1; % 1-vector to target
 Params.VelocityTransformFlag    = false;
 Params.MaxVelocityFlag          = false;
 Params.MaxVelocity              = 200;
@@ -63,52 +66,41 @@ Params.ScreenRefreshRate = 10; % Hz
 Params.UpdateRate = 10; % Hz
 
 %% Targets
-Params.TargetSize = 30;
+Params.TargetSize = 50;
 Params.OutTargetColor = [55,255,0];
 Params.InTargetColor = [255,55,0];
 
-Params.StartTargetPosition  = [0,0];
+Params.StartTargetPosition  = 0;
 Params.TargetRect = ...
     [-Params.TargetSize -Params.TargetSize +Params.TargetSize +Params.TargetSize];
 
-Params.ReachTargetAngles = (0:45:315)';
-Params.ReachTargetRadius = 200;
-Params.ReachTargetPositions = ...
-    Params.StartTargetPosition ...
-    + Params.ReachTargetRadius ...
-    * [cosd(Params.ReachTargetAngles) sind(Params.ReachTargetAngles)];
-Params.NumReachTargets = length(Params.ReachTargetAngles);
-
-Params.ReachTargetSamplingVec = [0 0 0 1 1 1 0 0];
-Params.ReachTargetSamplingVec = Params.ReachTargetSamplingVec ...
-    / sum(Params.ReachTargetSamplingVec);
+Params.ReachTargetRadius = 250;
+Params.ReachTargetPositions = Params.StartTargetPosition + ...
+    [-Params.ReachTargetRadius; +Params.ReachTargetRadius];
+Params.NumReachTargets = 2;
 
 %% Cursor
 Params.CursorColor = [0,102,255];
-Params.CursorSize = 10;
+Params.CursorSize = 15;
 Params.CursorRect = [-Params.CursorSize -Params.CursorSize ...
     +Params.CursorSize +Params.CursorSize];
 
 %% Kalman Filter Properties
-Params.SaveKalmanFlag = false; % if true, saves kf at each time bin, if false, saves kf 1x per trial
+Params.SaveKalmanFlag = false;
 G = Params.Gain;
-t = 1/Params.UpdateRate;
-a = 0.825; % .8
-w = 150; %750 * 100^2 / 200^2; % 750
+dt = 1/Params.UpdateRate;
+a = 0.825;
+w = 150;
 if Params.ControlMode>=3,
     Params.KF.A = [...
-        1	0	G*t	0	0;
-        0	1	0	G*t	0;
-        0	0	a	0	0;
-        0	0	0	a	0;
-        0	0	0	0	1];
+        1       G*dt    0;
+        0       a       0;
+        0       0       1];
     Params.KF.W = [...
-        0	0	0	0	0;
-        0	0	0	0	0;
-        0	0	w	0	0;
-        0	0	0	w	0;
-        0	0	0	0	0];
-    Params.KF.P = eye(5);
+        0       0       0;
+        0       w       0;
+        0       0       0];
+    Params.KF.P = eye(3);
     Params.KF.InitializationMode = Params.InitializationMode; % 1-imagined mvmts, 2-shuffled
     if Params.ControlMode==4, % set velocity kalman filter flag
         Params.KF.VelKF = true;
@@ -117,52 +109,19 @@ if Params.ControlMode>=3,
     end
 end
 
-%% LQR Optimal Velocity Controller
-if Params.OptimalVeloctityMode==2,
-    Params.CursorController.A = [...
-        1	0	t	0;
-        0	1	0	t;
-        0	0	a	0;
-        0	0	0	a];
-    Params.CursorController.B = [...
-        0   0   0   0
-        0   0   0   0
-        0   0   1   0
-        0   0   0   1];
-    qp = 2.5e0;
-    qv = 0;
-    Params.CursorController.Q = [...
-        qp  0   0   0
-        0   qp  0   0
-        0   0   qv  0
-        0   0   0   qv];
-    rp = 1e0;
-    rv = 3e0;
-    Params.CursorController.R = [...
-        rp  0   0   0
-        0   rp  0   0
-        0   0   rv  0
-        0   0   0   rv];
-    Params.CursorController.K = dlqr(...
-        Params.CursorController.A,Params.CursorController.B,...
-        Params.CursorController.Q,Params.CursorController.R);    
-end
-
 %% Velocity Command Online Feedback
 Params.DrawVelCommand.Flag = true;
 Params.DrawVelCommand.Rect = [-425,-425,-350,-350];
 
 %% Trial and Block Types
 Params.NumImaginedBlocks    = 0;
-Params.NumAdaptBlocks       = 2;
+Params.NumAdaptBlocks       = 4;
 Params.NumFixedBlocks       = 2;
-Params.NumTrialsPerBlock    = length(Params.ReachTargetAngles);
-Params.TargetSelectionFlag  = 1; % 1-pseudorandom, 2-random, 3-repeat, 4-sample vector
+Params.NumTrialsPerBlock    = 8;
+Params.TargetSelectionFlag  = 1; % 1-pseudorandom, 2-random
 switch Params.TargetSelectionFlag,
     case 1, Params.TargetFunc = @(n) mod(randperm(n),Params.NumReachTargets)+1;
     case 2, Params.TargetFunc = @(n) mod(randi(n,1,n),Params.NumReachTargets)+1;
-    case 3, Params.TargetFunc = @(a,b) mod((a-1)*ones(1,b),Params.NumReachTargets)+1;
-    case 4, Params.TargetFunc = @(n) randsample(1:Params.NumReachTargets,n,true,Params.ReachTargetSamplingVec);
 end
 
 %% CLDA Parameters
@@ -172,23 +131,17 @@ Params.CLDA.TypeStr     = TypeStrs{Params.CLDA.Type+1};
 Params.CLDA.UpdateTime = 80; % secs, for smooth batch
 Params.CLDA.Alpha = exp(log(.5) / (120/Params.CLDA.UpdateTime)); % for smooth batch
 
-% Lambda
-Params.CLDA.Lambda = 5000; % for RML
-FinalLambda = 5000; % for RML
-DeltaLambda = (FinalLambda - Params.CLDA.Lambda) ...
-    / ((Params.NumAdaptBlocks-3)...
+Params.CLDA.Lambda = 5000; %exp(log(.5) / (30*Params.UpdateRate)); % for RML
+Params.CLDA.FinalLambda = 5000; %exp(log(.5) / (500*Params.UpdateRate));
+DeltaLambda = (Params.CLDA.FinalLambda - Params.CLDA.Lambda) ...
+    / ((Params.NumAdaptBlocks-1)...
     *Params.NumTrialsPerBlock...
-    *Params.UpdateRate * 3); % bins/trial;
-
+    *Params.UpdateRate * 4); % bins/trial;
 Params.CLDA.DeltaLambda = DeltaLambda; % for RML
-Params.CLDA.FinalLambda = FinalLambda; % for RML
-
-Params.CLDA.FixedRmlFlag = false; % for RML during fixed
-Params.CLDA.FixedLambda = FinalLambda; % for RML during fixed
 
 switch Params.CLDA.AdaptType,
     case 'none',
-        Params.CLDA.DeltaLambda = 0;  
+        Params.CLDA.DeltaLambda = 0;
         Params.CLDA.DeltaAssistance = 0;
     case 'linear',
         switch Params.CLDA.Type,
@@ -206,7 +159,7 @@ switch Params.CLDA.AdaptType,
 end
 
 %% Hold Times
-Params.TargetHoldTime = .1;
+Params.TargetHoldTime = .2;
 Params.InterTrialInterval = 0;
 if Params.CenterReset,
     Params.InstructedDelayTime = .6;

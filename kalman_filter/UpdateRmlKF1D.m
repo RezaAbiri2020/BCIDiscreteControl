@@ -1,5 +1,5 @@
-function KF = UpdateRmlKF(KF,X,Y,Params,TaskFlag)
-% function KF = UpdateRmlKF(KF,X,Y,Params,TaskFlag)
+function KF = UpdateRmlKF1D(KF,X,Y,Params,TaskFlag)
+% function KF = UpdateRmlKF1D(KF,X,Y,Params,TaskFlag)
 % updates kalman filter for each iteration
 % follows eqs in Dangi et al., Neural Computation (2014)
 % 
@@ -16,7 +16,7 @@ ESS     = KF.ESS;
 Lambda  = exp(log(.5) / (KF.Lambda * Params.UpdateRate));
 
 if KF.VelKF,
-    X = X(3:end);
+    X = X(2:end);
 end
 
 switch TaskFlag,
@@ -31,7 +31,7 @@ switch TaskFlag,
         C = S/R;
         Q = (1/ESS) * (T - C*S'); % ignore Q since updating inv(Q) directly
         if KF.VelKF,
-            C = [zeros(size(C,1),2),C];
+            C = [zeros(size(C,1),1),C];
         end
     case 3, % fixed rml (only update const term)
         S(:,end)    = Lambda*S(:,end) + Y;
@@ -41,7 +41,7 @@ switch TaskFlag,
         C = S/R;
         Q = (1/ESS) * (T - C*S'); % ignore Q since updating inv(Q) directly
         if KF.VelKF,
-            C = [zeros(size(C,1),2),C];
+            C = [zeros(size(C,1),1),C];
         end
 end
 

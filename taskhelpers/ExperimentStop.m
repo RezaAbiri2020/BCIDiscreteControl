@@ -7,9 +7,15 @@ Screen('CloseAll');
 % Close Serial Port and audio
 fclose('all');
 
+if size(Params.KF.A,1)==5,
+    dim = '';
+else,
+    dim = '_1D';
+end
+
 % Update parameters of full kalman filter in persistence folder
-f1 = load(fullfile(Params.Persistencedir, 'full_kf_params.mat'));
-f2 = load(fullfile(Params.Persistencedir, 'kf_params.mat'));
+f1 = load(fullfile(Params.Persistencedir, sprintf('full_kf_params%s.mat',dim)));
+f2 = load(fullfile(Params.Persistencedir, sprintf('kf_params%s.mat',dim)));
 KF = f1.KF; % initialize to full kf, then update params
 KF.P                                            = f2.KF.P;
 KF.R                                            = f2.KF.R;
@@ -20,13 +26,14 @@ KF.C(Params.FeatureMask,:)                      = f2.KF.C;
 KF.Q(Params.FeatureMask,Params.FeatureMask)     = f2.KF.Q;
 KF.Tinv(Params.FeatureMask,Params.FeatureMask)  = f2.KF.Tinv;
 KF.Qinv(Params.FeatureMask,Params.FeatureMask)  = f2.KF.Qinv;
-save(fullfile(Params.Persistencedir, 'full_kf_params.mat'), ...
+save(fullfile(Params.Persistencedir, sprintf('full_kf_params%s.mat',dim)), ...
     'KF', '-v7.3', '-nocompression')
 
 % Save persistence folder with Data
 mkdir(fullfile(Params.Datadir,'persistence'))
-copyfile(fullfile(Params.Persistencedir, 'kf_params.mat'),...
-    fullfile(Params.Datadir, 'persistence', 'kf_params.mat'));
+copyfile(fullfile(Params.Persistencedir, sprintf('kf_params%s.mat',dim)),...
+    fullfile(Params.Datadir, 'persistence', sprintf('kf_params%s.mat',dim)));
+
 
 % quit
 fprintf('Ending Experiment\n')

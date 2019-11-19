@@ -22,8 +22,13 @@ save(fullfile(Params.Persistencedir, 'feature_stats.mat'),...
 % save kalman filter and corresponding feature mask
 if TaskFlag>1 && exist('KF','var'),
     FeatureMask = Params.FeatureMask;
-    save(fullfile(Params.Persistencedir, 'kf_params.mat'),...
-        'KF', 'FeatureMask', '-v7.3', '-nocompression');
+    if size(KF.C,2) == 5,
+        save(fullfile(Params.Persistencedir, 'kf_params.mat'),...
+            'KF', 'FeatureMask', '-v7.3', '-nocompression');
+    else,
+        save(fullfile(Params.Persistencedir, 'kf_params_1D.mat'),...
+            'KF', 'FeatureMask', '-v7.3', '-nocompression');
+    end
 end
 
 end

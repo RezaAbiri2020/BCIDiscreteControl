@@ -44,7 +44,6 @@ if exist('Data','var') && ~isempty(Data),
     if Neuro.Blackrock,
         Data.NeuralTimeBR(1,end+1) = Neuro.TimeStamp;
         Data.NeuralSamps(1,end+1) = Neuro.NumSamps;
-        Data.NeuralFeatures{end+1} = Neuro.NeuralFeatures;
         if Neuro.SaveRaw,
             Data.BroadbandData{end+1} = Neuro.BroadbandData;
             Data.Reference{end+1} = Neuro.Reference;
@@ -54,6 +53,7 @@ if exist('Data','var') && ~isempty(Data),
         end
     end
     
+    Data.NeuralFeatures{end+1} = Neuro.NeuralFeatures;
     if Neuro.DimRed.Flag,
         Data.NeuralFactors{end+1} = Neuro.NeuralFactors;
     end
