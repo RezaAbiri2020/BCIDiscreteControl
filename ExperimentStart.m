@@ -24,7 +24,8 @@ valid_tasks = {...
     'GridTask',...
     'RadialTask',...
     'RadialTyping',...
-    'RadialTypingMultiClick'};
+    'RadialTypingMultiClick',...
+    'ExoControl1D'};
 assert(any(strcmp(Task,valid_tasks)), 'Unknown task')
 if ~exist('Subject','var'), Subject = 'Test'; DEBUG = 1; end
 if ~exist('ControlMode','var'), ControlMode = 2; end
@@ -52,6 +53,7 @@ addpath(genpath(fullfile(projectdir,'kalman_filter')));
 addpath(genpath(fullfile(projectdir,'neuro')));
 addpath(genpath(fullfile(projectdir,'taskhelpers')));
 addpath(genpath(fullfile(projectdir,'typing_env')));
+addpath(genpath(fullfile(projectdir,'exo_control')));
 % add task module
 addpath(genpath(fullfile(projectdir,Task)))
 

@@ -1,0 +1,8 @@
+Glove Protocol
+
+<GetParams.m>
+Params.CenterReset      = true;
+Params.MvmtAxisAngle    = 90;
+Params.TargetSize 		= 70;
+Params.NumReachTargets 	= 1;
+

@@ -1,0 +1,8 @@
+Planar Protocol
+
+<GetParams.m>
+Params.CenterReset      = false;
+Params.MvmtAxisAngle    = 0;
+Params.TargetSize 		= 50;
+Params.NumReachTargets 	= 2;
+
