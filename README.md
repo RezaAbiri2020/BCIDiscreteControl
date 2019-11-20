@@ -18,9 +18,9 @@ General Principles:
 
 To run an experiment, type 
 
-'''
-ExperimentStart(*task_name*, *subject*, *control_mode*, *blackrock*,  *debug*),
-'''
+```matlab
+ExperimentStart(task_name, subject, control_mode, blackrock, debug)
+```
 
 where
 
@@ -85,4 +85,4 @@ This module contains classification models and functions that apply classificati
 This module contains functions to control the flow of a typing environment that is overlaid on the traditional tasks. For example, character selections, word selections, keyboard displays, undo functionality, etc... These functions primarily act on the *Keyboard* struct in the *Params* struct.
 
 ### exo_control
-This module contains functions that support interfacing with and controling a custom planar exoskeleton device. These functions primarily act on the *Arduino* struct in the *Params* struct.
+This module contains functions that support interfacing with and controling a custom planar exoskeleton device. These functions primarily act on the *Arduino* struct in the *Params* struct.truct.
