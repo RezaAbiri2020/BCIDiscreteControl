@@ -19,8 +19,8 @@ KbName('UnifyKeyNames');
 
 % Deal with inputs
 valid_tasks = {...
-    'Center-Out',...
-    'Center-Out-1D',...
+    'CenterOut',...
+    'CenterOut1D',...
     'GridTask',...
     'RadialTask',...
     'RadialTyping',...
@@ -49,13 +49,14 @@ rmpath(genpath(fullfile(projectdir)));
 % add non-task modules
 addpath(genpath(fullfile(projectdir,'arduino')));
 addpath(genpath(fullfile(projectdir,'audio')));
+addpath(genpath(fullfile(projectdir,'clicker')));
 addpath(genpath(fullfile(projectdir,'kalman_filter')));
 addpath(genpath(fullfile(projectdir,'neuro')));
-addpath(genpath(fullfile(projectdir,'taskhelpers')));
+addpath(genpath(fullfile(projectdir,'task_helpers')));
 addpath(genpath(fullfile(projectdir,'typing_env')));
 addpath(genpath(fullfile(projectdir,'exo_control')));
 % add task module
-addpath(genpath(fullfile(projectdir,Task)))
+addpath(genpath(fullfile(projectdir,'task_modules',Task)))
 
 %% Retrieve Parameters from Params File
 Params.Task = Task;
