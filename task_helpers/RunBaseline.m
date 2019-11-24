@@ -29,7 +29,7 @@ while ~done,
         if Params.BLACKROCK && ((tim-Cursor.LastUpdateTime)>1/Params.UpdateRate),
             Cursor.LastUpdateTime = tim;
             Cursor.LastPredictTime = tim;
-            Neuro = NeuroPipeline(Neuro);
+            Neuro = NeuroPipeline(Neuro, [], Params);
         end
         
         % update command line with progress

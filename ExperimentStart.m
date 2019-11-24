@@ -36,10 +36,13 @@ if strcmpi(Subject,'Test'), Subject = 'Test'; end % ignore case
 
 %% Set up path for running task dependent code
 if IsWin,
+    homedir = 'C:\Users\ganguly-lab2';
     projectdir = fullfile('C:\Users\ganguly-lab2\Documents\MATLAB\bci');
 elseif IsOSX,
+    homedir = '/Users/daniel/';
     projectdir = '/Users/daniel/Projects/bci/';
 else,
+    homedir = '~';
     projectdir = '~/Projects/bci/';
     butter(1,[.1,.5]);
 end
@@ -64,6 +67,7 @@ Params.Subject = Subject;
 Params.ControlMode = ControlMode;
 Params.BLACKROCK = BLACKROCK;
 Params.DEBUG = DEBUG;
+Params.Homedir = homedir;
 Params = GetParams(Params);
 
 %% Initialize Blackrock System
@@ -239,7 +243,7 @@ try
         Neuro.DimRed.Flag = Params.DimRed.Flag;
 
         % save of useful stats and params
-        SavePersistence(Params,Neuro,KF)
+        SavePersistence(Params,Neuro,KF,0)
         
     else, % if baseline is set to 0, just load stats
         f=load(fullfile(Params.Persistencedir, 'ch_stats.mat'));

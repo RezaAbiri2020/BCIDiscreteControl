@@ -54,7 +54,7 @@ if strcmpi(Params.Subject,'Test'),
 end
 
 % create folders for saving
-Params.Datadir = fullfile('~/Data',Params.Task,...
+Params.Datadir = fullfile(Params.Homedir,'Data',Params.Task,...
     Params.Subject,Params.YYYYMMDD,Params.HHMMSS);
 mkdir(Params.Datadir);
 
@@ -216,7 +216,7 @@ Params.InterBlockInterval = 10; % 0-10s, if set to 10 use instruction screen
 Params.ImaginedMvmtTime = 6;
  
 %% Persistence
-Params.Persistencedir = '~/persistence';
+Params.Persistencedir = fullfile(Params.Homedir,'persistence');
 
 %% Feedback
 Params.FeedbackSound = false;

@@ -24,7 +24,7 @@ Params.CLDA.Type        = 3; % 0-none, 1-refit, 2-smooth batch, 3-RML
 Params.CLDA.AdaptType   = 'linear'; % {'none','linear'}, affects assistance & lambda for rml
 
 Params.InitializationMode   = 4; % 1-imagined mvmts, 2-shuffled imagined mvmts, 3-choose dir, 4-most recent KF
-Params.BaselineTime         = 0; % secs
+Params.BaselineTime         = 120; % secs
 Params.BadChannels          = [];
 Params.SpatialFiltering     = false;
 Params.UseFeatureMask       = true;
@@ -51,7 +51,7 @@ if strcmpi(Params.Subject,'Test'),
 end
 
 % create folders for saving
-Params.Datadir = fullfile('~/Data',Params.Task,...
+Params.Datadir = fullfile(Params.Homedir,'Data',Params.Task,...
     Params.Subject,Params.YYYYMMDD,Params.HHMMSS);
 mkdir(Params.Datadir);
 
@@ -219,7 +219,7 @@ Params.InterBlockInterval = 10; % 0-10s, if set to 10 use instruction screen
 Params.ImaginedMvmtTime = 3;
 
 %% Persistence
-Params.Persistencedir = '~/persistence';
+Params.Persistencedir = fullfile(Params.Homedir,'persistence');
 
 %% Feedback
 Params.FeedbackSound = false;

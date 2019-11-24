@@ -34,7 +34,7 @@ dT_vec = [];
 if Params.BLACKROCK,
     Cursor.LastPredictTime = GetSecs;
     Cursor.LastUpdateTime = Cursor.LastPredictTime;
-    Neuro = NeuroPipeline(Neuro);
+    Neuro = NeuroPipeline(Neuro,[],Params);
 end
 
 %%==========================================================================================================================
