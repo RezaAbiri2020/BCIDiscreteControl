@@ -274,36 +274,10 @@ if ~Data.ErrorID && Params.InstructedDelayTime>0,
                 dT = tim-Cursor.LastUpdateTime;
                 dT_vec(end+1) = dT;
                 Cursor.LastUpdateTime = tim;
-                if Params.BLACKROCK,
-                    [Neuro,Data] = NeuroPipeline(Neuro,Data);
-                    Data.NeuralTime(1,end+1) = tim;
-                end
-                if Params.GenNeuralFeaturesFlag,
-                    Neuro.NeuralFeatures = VelToNeuralFeatures(Params);
-                    if Params.BLACKROCK, % override
-                        Data.NeuralFeatures{end} = Neuro.NeuralFeatures;
-                        Data.NeuralTime(1,end) = tim;
-                    else,
-                        Data.NeuralFeatures{end+1} = Neuro.NeuralFeatures;
-                        Data.NeuralTime(1,end+1) = tim;
-                    end
-                end
-                if Neuro.DimRed.Flag,
-                    Neuro.NeuralFactors = Neuro.DimRed.F(Neuro.NeuralFeatures(Params.FeatureMask));
-                    Data.NeuralFactors{end+1} = Neuro.NeuralFactors;
-                end
-                %KF = UpdateCursor(Params,Neuro,TaskFlag,StartTargetPos,KF);
-                % save kalman filter
-                %if Params.ControlMode>=3 && TaskFlag>1 && Params.SaveKalmanFlag,
-                %    Data.KalmanGain{end+1} = [];
-                %    Data.KalmanGain{end}.K = KF.K;
-                %    if TaskFlag==2,
-                %        Data.KalmanFilter{end+1} = [];
-                %        Data.KalmanFilter{end}.C = KF.C;
-                %        Data.KalmanFilter{end}.Q = KF.Q;
-                %		 Data.KalmanFilter{end}.Lambda = KF.Lambda;
-                %    end
-                %end
+                
+                Data.NeuralTime(1,end+1) = tim;
+                [Neuro,Data] = NeuroPipeline(Neuro,Data,Params);
+                
             end
             
             % cursor
