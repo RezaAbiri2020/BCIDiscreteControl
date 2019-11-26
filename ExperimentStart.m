@@ -90,8 +90,8 @@ if strcmpi(Params.Subject,'Test'),
 end
 
 % create folders for saving
-Params.Datadir = fullfile(Params.Homedir,'Data',Params.Task,...
-    Params.Subject,Params.YYYYMMDD,Params.HHMMSS);
+Params.Datadir = fullfile(Params.Homedir,'Data',...
+    Params.Subject,Params.YYYYMMDD,Params.Task,Params.HHMMSS);
 mkdir(Params.Datadir);
 
 % persistence folder

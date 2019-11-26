@@ -30,6 +30,8 @@ Params.CueTextFlag          = true;
 Params.CueTarget            = true;
 Params.GenNeuralFeaturesFlag= false; % if blackrock is off, automatically sets to true
 
+Params.DrawFormattedText    = false;
+
 %% Cursor Velocity
 Params.Gain                     = 2; %10;
 Params.OptimalVeloctityMode     = 1; % 1-vector to target, 2-LQR

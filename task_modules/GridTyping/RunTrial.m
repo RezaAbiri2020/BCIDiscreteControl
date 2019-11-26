@@ -120,8 +120,11 @@ if ~Data.ErrorID,
             Data.ClickerState(1,end+1) = Cursor.ClickState;
             
             % reach target
-            GridCol = repmat(Params.GridColor,Params.NumReachTargets,1);
-            GridCol(Data.TargetID,:) = Params.OutTargetColor; % cue
+%             GridCol = repmat(Params.GridColor,Params.NumReachTargets,1);
+            GridCol = Params.ReachTargetColors;
+            if Params.CueTextFlag,
+                GridCol(Data.TargetID,:) = Params.OutTargetColor; % cue
+            end
             TargetID = InTargetKeyboard(Cursor,Params.ReachTargetWindows);
             if Params.ClickerBins == -1, % not using clicker, use col to show inTarget
                 if TargetID == Data.TargetID,
@@ -200,14 +203,17 @@ if ~Data.ErrorID,
         end
         
         % Typing
-        if done,
+        if done && Data.SelectedTargetID~=0,
             Params.Keyboard.State.TargetID = TargetID;
             Params = CheckKeys(Params);
             Params = MakeSelection(Params);
             if any(Cursor.ClickState==Params.ClickerBins),
                 % save selection in main data structure
                 Data.SelectedTargetCharID = find(Cursor.ClickState);
-                Data.SelectedTargetCharStr = Params.Keyboard.State.SelectedCharacters{end};
+                try,
+                    Data.SelectedTargetCharStr = ...
+                        Params.Keyboard.State.SelectedCharacters{end};
+                end
             end
             fprintf('  Selected Target %i\n', TargetID)
             fprintf('  Selected Character %s\n', Data.SelectedTargetCharStr)

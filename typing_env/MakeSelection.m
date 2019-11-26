@@ -7,8 +7,29 @@ switch Params.Keyboard.State.Mode
     case 'Character'
         if any(Params.Keyboard.State.InText)
             Params.Keyboard.N_Back = 0;
-            Params.Keyboard.State.SelectedCharacters = [Params.Keyboard.State.SelectedCharacters, Params.Keyboard.State.SelectableText(Params.Keyboard.State.InText)];
-            Params = UpdateState(Params, 'Character');
+            % dbs added undo, space, and backspace
+            char = Params.Keyboard.State.SelectableText(Params.Keyboard.State.InText);
+            switch char{1},
+                case 'SPACE',
+                    Params.Keyboard.State.SelectedCharacters = ...
+                        [Params.Keyboard.State.SelectedCharacters, {' '}];
+                    Params = UpdateState(Params, 'Character');
+                case {'UNDO', 'DELETE'}, % like a back arrow
+                    Params.Keyboard.N_Back = Params.Keyboard.N_Back + 1;
+                    if length(Params.Keyboard.History.State) >= 1 && Params.Keyboard.N_Back < Params.Keyboard.MaxUndo,
+                        Params.Keyboard.History.State{end}.SelectedCharacters = ...
+                            Params.Keyboard.History.State{end}.SelectedCharacters(1:end-1);
+                        Params.Keyboard.State = Params.Keyboard.History.State{end};
+                        Params.Keyboard.History.State = Params.Keyboard.History.State(1:end-1);
+                    end % if length(History) >= 1
+                case {'START OVER'}, % reset
+                    Params.Keyboard.N_Back = 0;
+                    Params = UpdateState(Params, 'Reset');
+                otherwise,
+                    Params.Keyboard.State.SelectedCharacters = [Params.Keyboard.State.SelectedCharacters, char];
+                    Params = UpdateState(Params, 'Character');
+            end
+            
         elseif any(Params.Keyboard.State.InArrow)
             switch Params.Keyboard.Pos.ArrowLabels{Params.Keyboard.State.InArrow}
                 case 'Forward'

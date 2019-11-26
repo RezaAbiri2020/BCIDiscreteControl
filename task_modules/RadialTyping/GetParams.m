@@ -28,6 +28,7 @@ Params.SpatialFiltering     = false;
 Params.UseFeatureMask       = true;
 Params.GenNeuralFeaturesFlag= false; % if blackrock is off, automatically sets to true
 
+Params.DrawFormattedText    = false;
 Params.CueTextFlag          = false;
 Params.CueTarget            = false;
 

@@ -16,11 +16,19 @@ Screen('TextSize', Params.WPTR, p.Results.FontSize);
 Screen('TextStyle', Params.WPTR, 1);
 x_offset = p.Results.Offset(1);
 y_offset = p.Results.Offset(2);
+
+% if displaying selected text
+if size(Positions,1) == 1,
+    wrap_len = 80;
+else,
+    wrap_len = 8;
+end
+
 for i=1:length(Text)
     if Params.DrawFormattedText == true,
         DrawFormattedText(Params.WPTR, Text{i}, ...
-            'centerblock', 'center', p.Results.Color, 6, [], [], ...
-            [], [], Params.Keyboard.Pos.TargetEdges(:,i)');
+            'centerblock', 'center', p.Results.Color, wrap_len, [], [], ...
+            [], [], Positions(i,:));
     else,
         Screen('DrawText', Params.WPTR, Text{i}, Positions(i, 1) - x_offset * length(Text{i}), Positions(i, 2) - y_offset, p.Results.Color);
     end

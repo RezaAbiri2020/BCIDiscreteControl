@@ -65,7 +65,9 @@ KP.Pos.B_Arrow = [];
 KP.Pos.TargetEdges = (repmat(KP.TargetPosition, 1, 2) + KP.TargetRect)';
 [~, ix_top_targ] = min(KP.TargetPosition(:, 2));
 [~, ix_right_targ] = max(KP.TargetPosition(:, 1));
-KP.Pos.CharDisplay = KP.TargetPosition(ix_top_targ, :) - [0, KP.TargetHeight * 0.60];
+KP.Pos.CharDisplay = KP.TargetPosition(ix_top_targ, :) - [0, KP.TargetHeight * 5];
+KP.Pos.CharDisplayEdges = [KP.Pos.CharDisplay(1), KP.Pos.CharDisplay(2), ...
+    KP.Pos.CharDisplay(1)+1100, KP.Pos.CharDisplay(2)+2*KP.TargetHeight];
 KP.Pos.WordDisplay = KP.Pos.CharDisplay - [0, KP.TargetHeight * 0.2];
 
 % End screen
