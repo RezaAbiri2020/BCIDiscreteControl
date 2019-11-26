@@ -69,6 +69,32 @@ Params.BLACKROCK = BLACKROCK;
 Params.DEBUG = DEBUG;
 Params.Homedir = homedir;
 Params = GetParams(Params);
+Params = GetNeuroParams(Params);
+Params = LoadFeatureMask(Params);
+
+%% Verbose
+if Params.DEBUG, Params.Verbose = true;
+else, Params.Verbose = false;
+end
+
+%% Data Saving
+now = datetime; % get today's date
+Params.YYYYMMDD = sprintf('%i',yyyymmdd(now));
+Params.HHMMSS = sprintf('%02i%02i%02i',now.Hour,now.Minute,round(now.Second));
+
+% if Subject is 'Test' or 'test' then can write over previous test
+if strcmpi(Params.Subject,'Test'),
+    Params.YYYYMMDD = 'YYYYMMDD';
+    Params.HHMMSS = 'HHMMSS';
+end
+
+% create folders for saving
+Params.Datadir = fullfile(Params.Homedir,'Data',Params.Task,...
+    Params.Subject,Params.YYYYMMDD,Params.HHMMSS);
+mkdir(Params.Datadir);
+
+% persistence folder
+Params.Persistencedir = fullfile(Params.Homedir,'persistence');
 
 %% Initialize Blackrock System
 if BLACKROCK,
@@ -80,6 +106,8 @@ if BLACKROCK,
     cbmex('close'); % always close
     cbmex('open'); % open library
     cbmex('trialconfig', 1); % empty the buffer
+else,
+    Params.GenNeuralFeaturesFlag = true;
 end
 
 % load channel layout file and store in params
@@ -219,7 +247,7 @@ Params.Center = [mean(Params.ScreenRectangle([1,3])),mean(Params.ScreenRectangle
 Screen('TextFont',Params.WPTR, 'Arial');
 Screen('TextSize',Params.WPTR, 28);
 
-%% Initialze keyboard
+%% Initialize keyboard
 typing_tasks = {'RadialTyping','RadialTypingMultiClick'};
 if any(strcmp(Task,typing_tasks)),
     Params = SetKeyboardParams(Params);
