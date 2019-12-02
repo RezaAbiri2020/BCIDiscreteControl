@@ -1,6 +1,7 @@
 # bci
 
 <br>
+
 ## Installation
 To download or clone the full repository follow use this [link](https://github.com/gangulylab/bci.git).
 
@@ -11,8 +12,11 @@ There are a few dependencies that you must have installed to run bci:
 * [Psychtoolbox](http://psychtoolbox.org/)
 
 <br>
+
 ## BCI coding environment
+
 ---
+
 ### General Principles:
 
 1. Blackrock neural acquisition system and API (cbmex) reads in neural data.
@@ -54,7 +58,9 @@ The paths to the folders are defined in ExperimentStart.
 Each of these files are saved after each trial (or experiment). This way, if these parameters are changed during an experiment, the most recent parameters are present for future experiments.
 
 **Data** is a folder that contains the data from each trial in a separate file.
+
 ---
+
 ### Task Flow
 This is an example of how the functions call each other in an example task. Starred functions, are specific to each task module. Also note, the function names listed here might be different depending on whether a 1D or 2D kalman filter is used, whether a clicker is being used, whether typing is being used, etc...
 
@@ -85,7 +91,9 @@ This is an example of how the functions call each other in an example task. Star
 ---> ExperimentStop................................# Ends an experiment. Can be called early by user.
 
 <br>
+
 ## Matlab Modules
+
 1. task_modules - control task flow in different environments
 	* CenterOut
 	* CenterOut1D
@@ -104,7 +112,9 @@ This is an example of how the functions call each other in an example task. Star
 Each module will be explained in more detail below.
 
 ---
+
 ### task_modules
+
 Each task module contains at least four files:
 
 * GetParams.m
@@ -125,7 +135,9 @@ Each task module contains at least four files:
 ---------> *RunTrial...................................# Main Loop (Updates at Params.UpdateRate)
 
 ---
+
 ### task_helpers
+
 This module contains helper functions to control task flow (e.g., *ExperimentPause.m*) and to control data structures (e.g., *UpdateCursor.m*) across many tasks. A few of these are outlined below.
 
 ---> CheckPause ..............................# Polls keyboard, checks for *'p'*
@@ -149,7 +161,9 @@ This module contains helper functions to control task flow (e.g., *ExperimentPau
 ------> UpdateRmlKF......................# updates kalman filter weights in a recursive maximum likelihood framework
 
 ---
+
 ### neuro
+
 This module acts on the *Neuro* struct. It contains a neural processing pipeline that can be modified by changing parameters in the *GetParams.m* file. The main function here is *NeuroPipeline.m*, which collects neural data (through the Blackrock API), performs signal preprocessing, computes neural features, etc...
 
 *GetNeuroParams.m* contains parameters that change how neural data is processed, including details of neural filter bank, flags for processing/saving steps (whether to save raw, processed, reduced, etc... data) and defines the edges of filters, which filtered signals will get averaged together, which are computed through a hilbert vs. traditional power estimate, etc...
@@ -183,30 +197,33 @@ This module acts on the *Neuro* struct. It contains a neural processing pipeline
 ------> Neuro.DimRed.F...................# reduces dimensionality by applying function (loaded in RunTask)
 
 ---
+
 ### arduino
+
 This module contains a few helper functions for interacting through Matlab with an Arduino device. This is useful for time synchronization (sending arduino pulses), and for control of the planar exo system.
 
 ---
+
 ### kalman_filter
+
 This module contains code for loading, fitting, and updating parameters of a Kalman Filter. It contains separate functions for 1D and 2D Kalman Filters. It acts on the *KF* struct.
 
 ---
+
 ### clicker
+
 This module contains classification models and functions that apply classification to neural data and return discrete states. These functions act on the *Clicker* struct. Currently, *click_classifier.m* returns
 
 ---
+
 ### typing_env
+
 This module contains functions to control the flow of a typing environment that is overlaid on the traditional tasks. For example, character selections, word selections, keyboard displays, undo functionality, etc... These functions primarily act on the *Keyboard* struct in the *Params* struct.
 
 ---
+
 ### exo_control
+
 This module contains functions that support interfacing with and controling a custom planar exoskeleton device. These functions primarily act on the *Arduino* struct in the *Params* struct.truct.assification to neural data and return discrete states. These functions act on the *Clicker* struct. Currently, *click_classifier.m* returns
 
 
---
-### typing_env
-This module contains functions to control the flow of a typing environment that is overlaid on the traditional tasks. For example, character selections, word selections, keyboard displays, undo functionality, etc... These functions primarily act on the *Keyboard* struct in the *Params* struct.
-
----
-### exo_control
-This module contains functions that support interfacing with and controling a custom planar exoskeleton device. These functions primarily act on the *Arduino* struct in the *Params* struct.truct.
