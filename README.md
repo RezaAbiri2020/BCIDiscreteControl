@@ -249,4 +249,3 @@ This module contains functions that support interfacing with and controling a cu
 ---
 
 
-fication to neural data and return discrete states. These functions act on the *Clicker* struct. Currently, *click_classifier.m* returns
