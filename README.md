@@ -208,6 +208,26 @@ This module contains a few helper functions for interacting through Matlab with 
 
 This module contains code for loading, fitting, and updating parameters of a Kalman Filter. It contains separate functions for 1D and 2D Kalman Filters. It acts on the *KF* struct.
 
+#### Loading/Initializing Kalman Filter
+---> GetParams..............................# Sets experimental parameters
+
+------> LoadKF2dDynamics............# Sets kalman Filter A and W matrices
+
+<br>
+
+---> FitKF........................................# Either loads data and fits new kalman C and Q matrices or loads existing matrices from persistence folder
+
+#### Running Kalman Filter
+---> UpdateCursor........................# Applies current kalman filter to cursor state  
+
+------> UpdateRmlKF......................# updates kalman filter weights in a recursive maximum likelihood framework  
+*In reality, sufficient statistics for generating a kalman filter are tracked and updated at each time bin. Then the C and Q matrices are computed from these sufficient statistics.*
+
+#### Saving Kalman Filter
+---> SavePersistence....................# Saves current current kalman filter after each trial (kf_params or kf_params_1D)
+
+---> ExperimentStop....................# Updates adapted parameters within a full kalman filter after each experiment ( full_kf_params or full_kf_params_1D). Leaves unadapted parameters alone.
+
 ---
 
 ### clicker
@@ -224,6 +244,9 @@ This module contains functions to control the flow of a typing environment that 
 
 ### exo_control
 
-This module contains functions that support interfacing with and controling a custom planar exoskeleton device. These functions primarily act on the *Arduino* struct in the *Params* struct.truct.assification to neural data and return discrete states. These functions act on the *Clicker* struct. Currently, *click_classifier.m* returns
+This module contains functions that support interfacing with and controling a custom planar exoskeleton device. These functions primarily act on the *Arduino* struct in the *Params* struct.
+
+---
 
 
+fication to neural data and return discrete states. These functions act on the *Clicker* struct. Currently, *click_classifier.m* returns
