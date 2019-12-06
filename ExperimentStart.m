@@ -151,6 +151,7 @@ Neuro.UpdateFeatureStatsFlag = Params.UpdateFeatureStatsFlag;
 Neuro.ChMap             = Params.ChMap;
 Neuro.SpatialFiltering  = Params.SpatialFiltering;
 Neuro.FeatureMask       = Params.FeatureMask;
+Neuro.LFOFilter         = Params.LFOFilter;
 
 % initialize filter bank state
 for i=1:length(Params.FilterBank),

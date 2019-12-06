@@ -30,7 +30,9 @@ pwr1 = squeeze(log10(mean(hilb_pwr(end-samps+1:end,:,:),1)))'; % avg in last bin
 % [freqs x channels]
 
 % compute average pwr for all remaining freq bands in last bin
-pwr2 = squeeze(log10(mean(Neuro.FilteredData(:,:,Neuro.NumBuffer+1:end).^2, 1)))';
+pwr2a = squeeze(log10(mean(Neuro.FilteredData(:,:,Neuro.NumBuffer+1:8).^2, 1)))'; % excluding the hG 
+pwr2b = squeeze(mean(Neuro.FilteredData(:,:,9:16),1))';
+pwr=[pwr2a;pwr2b];
 % [freqs x channels]
 
 % combine feature vectors and remove singleton dimension

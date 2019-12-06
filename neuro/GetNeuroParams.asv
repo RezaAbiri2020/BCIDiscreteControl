@@ -156,10 +156,8 @@ end
 % create a separate LFO filter alone
 Params.LFOFilter.fpass = [.5 4];
 % compute its coefficients
-[b,a] = butter(3,Params.LFOFilter.fpass/(Params.Fs/2));
-Params.LFOFilter.a = a;
-Params.LFOFilter.b = b;
 
+Params.LFOFilter.a
 
 % unique pwr feature + all phase features
 Params.NumBuffer = sum([Params.FilterBank.buffer_flag]);
