@@ -14,21 +14,21 @@ end
 
 %% Control
 Params.CenterReset      = true; % if true, cursor automatically is at center at trial start
-Params.Assistance       = 0.02; %0.05; % value btw 0 and 1, 1 full assist
+Params.Assistance       = 0; %0.05; % value btw 0 and 1, 1 full assist
 Params.DaggerAssist 	= true;
 
 Params.CLDA.Type        = 3; % 0-none, 1-refit, 2-smooth batch, 3-RML
 Params.CLDA.AdaptType   = 'linear'; % {'none','linear'}, affects assistance & lambda for rml
 
 Params.InitializationMode   = 4; % 1-imagined mvmts, 2-shuffled imagined mvmts, 3-choose dir, 4-most recent KF
-Params.BaselineTime         = 0; % secs
+Params.BaselineTime         = 120; % secs
 Params.BadChannels          = [];
 Params.SpatialFiltering     = false;
 Params.UseFeatureMask       = true;
 Params.GenNeuralFeaturesFlag= false; % if blackrock is off, automatically sets to true
 
 %% Cursor Velocity
-Params.Gain                     = 10;
+Params.Gain                     = 6;
 Params.OptimalVeloctityMode     = 1; % 1-vector to target, 2-LQR
 Params.VelocityTransformFlag    = false;
 Params.MaxVelocityFlag          = false;
@@ -89,8 +89,8 @@ Params.DrawVelCommand.Rect = [-425,-425,-350,-350];
 
 %% Trial and Block Types
 Params.NumImaginedBlocks    = 0;
-Params.NumAdaptBlocks       = 1;
-Params.NumFixedBlocks       = 0;
+Params.NumAdaptBlocks       = 2;
+Params.NumFixedBlocks       = 2;
 Params.NumTrialsPerBlock    = length(Params.ReachTargetAngles);
 Params.TargetSelectionFlag  = 1; % 1-pseudorandom, 2-random, 3-repeat, 4-sample vector
 switch Params.TargetSelectionFlag,
@@ -127,7 +127,7 @@ switch Params.CLDA.AdaptType,
         Params.CLDA.DeltaAssistance = 0;
     case 'linear',
         switch Params.CLDA.Type,
-            case 2, % smooth batch  p
+            case 2, % smooth batch 
                 Params.CLDA.DeltaAssistance = ... % linearly decrease assistance
                     Params.Assistance...
                     /(Params.NumAdaptBlocks*Params.NumTrialsPerBlock*5/Params.CLDA.UpdateTime);
