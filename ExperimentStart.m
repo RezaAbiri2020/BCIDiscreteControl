@@ -158,6 +158,12 @@ for i=1:length(Params.FilterBank),
     Neuro.FilterBank(i).state = [];
 end
 
+% initialize filter bank state for the hg-lfo part
+for i=1:8
+    Neuro.LFOFilter.state{i}=[];
+end
+
+
 % initialize stats for each channel for z-scoring
 Neuro.ChStats.mean      = zeros(1,Params.NumChannels); % estimate of mean for each channel
 Neuro.ChStats.var       = zeros(1,Params.NumChannels); % estimate of variance for each channel

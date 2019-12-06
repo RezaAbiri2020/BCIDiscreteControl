@@ -22,19 +22,14 @@ end
 % re filter the HG filtered data i.e. 9 thru 16 
 idx = find([Neuro.FilterBank.feature]==7);
 
-% reinitialize the state
-for i=1:length(idx)
-   Neuro.FilterBank(idx(i)).state = []; 
-end
-
 % low pass filter the HG amplitude
 for i=1:length(idx)
-     [filtered_data(1:samps,1:chans,idx(i)), Neuro.FilterBank(idx(i)).state] = ...
+     [filtered_data(1:samps,1:chans,idx(i)), Neuro.LFOFilter.state{i}] = ...
         filter(...
         Neuro.LFOFilter.b, ...
         Neuro.LFOFilter.a, ...
         abs(hilbert(filtered_data(1:samps,1:chans,idx(i)))), ...
-        Neuro.FilterBank(idx(i)).state);    
+        Neuro.LFOFilter.state{i});    
 end
 
 % put in Neuro
