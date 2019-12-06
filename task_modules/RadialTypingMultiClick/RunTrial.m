@@ -85,7 +85,7 @@ if ~Data.ErrorID,
                     UpdateMultiClicker(Params, Neuro, Clicker)
                 end
                 
-                if all(Cursor.ClickState == 0), % not clicking -> update cursor state
+                if true%all(Cursor.ClickState == 0), % not clicking -> update cursor state
                     % freeze cursor for clicker data collect mode
                     if Params.ClickerDataCollection && ...
                             InTargetRadial(Cursor,Params.ReachTargetVerts,Params.InnerCircleRadius)==Data.TargetID,
@@ -132,11 +132,12 @@ if ~Data.ErrorID,
                     CursorCol = Params.InTargetColor;
                 end
             else, % use cursor color to indicate clicking
-                if any(Cursor.ClickState>0),
-                    CursorCol = Params.InTargetColor;
-                else,
-                    CursorCol = Params.CursorColor;
-                end
+                 CursorCol = Params.CursorColor;
+%                 if any(Cursor.ClickState>0),
+%                     CursorCol = Params.InTargetColor;
+%                 else,
+%                     CursorCol = Params.CursorColor;
+%                 end
             end
             
             % start counting time if cursor is in any target
@@ -193,7 +194,8 @@ if ~Data.ErrorID,
         end
         
         % end if clicks in a target
-        if any(Cursor.ClickState==Params.ClickerBins) && TargetID~=0,
+        %if any(Cursor.ClickState==Params.ClickerBins) && TargetID~=0,
+        if any(Cursor.ClickState==Params.ClickerBins) && TargetID==Data.TargetID,
             done = 1;
             Data.SelectedTargetID = TargetID;
             Data.SelectedTargetPosition = Params.ReachTargetPositions(TargetID,:);
