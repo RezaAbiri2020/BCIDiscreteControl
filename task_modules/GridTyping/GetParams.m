@@ -32,10 +32,10 @@ Params.CueTextFlag          = false;
 Params.DrawFormattedText    = true;
 
 %% Cursor Velocity
-Params.Gain                     = 2;
+Params.Gain                     = 6;
 Params.OptimalVeloctityMode     = 1; % 1-vector to target, 2-LQR
 Params.VelocityTransformFlag    = false;
-Params.MaxVelocityFlag          = false;
+Params.MaxVelocityFlag          = false;p
 Params.MaxVelocity              = 200;
 
 %% Cursor Click
@@ -47,7 +47,7 @@ if Params.ClickerDataCollection,
 end
 
 %% Sync to Blackrock
-Params.ArduinoSync = false;
+Params.ArduinoSync = true;
 
 %% Timing
 Params.ScreenRefreshRate = 10; % Hz
@@ -75,7 +75,7 @@ Params.CursorRect = [-Params.CursorSize -Params.CursorSize ...
 Params.SaveKalmanFlag = false; % if true, saves kf at each time bin, if false, saves kf 1x per trial
 G = Params.Gain;
 t = 1/Params.UpdateRate;
-a = 0.85;%.825;
+a = 0.91;%.825;
 w = 150;
 if Params.ControlMode>=3,
     Params = LoadKF2dDynamics(Params, G, t, a, w);
