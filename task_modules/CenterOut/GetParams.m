@@ -15,7 +15,7 @@ end
 %% Control
 Params.CenterReset      = false; % if true, cursor automatically is at center at trial start
 Params.Assistance       = 0; %0.05; % value btw 0 and 1, 1 full assist
-Params.DaggerAssist 	= true;
+Params.DaggerAssist 	= false;
 
 Params.CLDA.Type        = 3; % 0-none, 1-refit, 2-smooth batch, 3-RML
 Params.CLDA.AdaptType   = 'linear'; % {'none','linear'}, affects assistance & lambda for rml
@@ -51,7 +51,7 @@ Params.TargetRect = ...
     [-Params.TargetSize -Params.TargetSize +Params.TargetSize +Params.TargetSize];
 
 Params.ReachTargetAngles = (0:45:315)';
-Params.ReachTargetRadius = 200;
+Params.ReachTargetRadius = 200; 
 Params.ReachTargetPositions = ...
     Params.StartTargetPosition ...
     + Params.ReachTargetRadius ...
@@ -90,7 +90,7 @@ Params.DrawVelCommand.Rect = [-425,-425,-350,-350];
 %% Trial and Block Types
 Params.NumImaginedBlocks    = 0;
 Params.NumAdaptBlocks       = 0;
-Params.NumFixedBlocks       = 2;
+Params.NumFixedBlocks       = 1;
 Params.NumTrialsPerBlock    = length(Params.ReachTargetAngles);
 Params.TargetSelectionFlag  = 1; % 1-pseudorandom, 2-random, 3-repeat, 4-sample vector
 switch Params.TargetSelectionFlag,
