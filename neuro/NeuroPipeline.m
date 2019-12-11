@@ -14,12 +14,15 @@ if Neuro.Blackrock,
         Neuro = ZscoreChannels(Neuro);
     end
     Neuro = ApplyFilterBank(Neuro);
+    if Neuro.LongTermNorm
+        Neuro = ZscoreFeatures_LongTerm(Neuro);
+    end
     Neuro = UpdateNeuroBuf(Neuro);
     Neuro = CompNeuralFeatures(Neuro);
     if Neuro.UpdateFeatureStatsFlag,
-        Neuro = UpdateFeatureStats(Neuro);
+        Neuro = UpdateFeat  ureStats(Neuro);
     end
-    if Neuro.ZscoreFeaturesFlag,
+    if Neuro.ZscoreFeaturesFlag && ~Neuro.LongTermNorm,
         Neuro = ZscoreFeatures(Neuro);
     end
 end
@@ -52,12 +55,12 @@ if exist('Data','var') && ~isempty(Data),
             Data.ProcessedData{end+1} = Neuro.FilteredData;
         end
     end
-    
+
     Data.NeuralFeatures{end+1} = Neuro.NeuralFeatures;
     if Neuro.DimRed.Flag,
         Data.NeuralFactors{end+1} = Neuro.NeuralFactors;
     end
-    
+
     varargout{2} = Data;
 end
 

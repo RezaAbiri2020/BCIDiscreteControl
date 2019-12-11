@@ -20,7 +20,7 @@ KbName('UnifyKeyNames');
 % Deal with inputs
 valid_tasks = {...
     'CenterOut',...
-    'CenterOut1D',...  
+    'CenterOut1D',...
     'GridTask',...
     'GridTyping',...
     'RadialTask',...
@@ -130,6 +130,7 @@ Neuro.Blackrock         = Params.BLACKROCK;
 Neuro.GenNeuralFeaturesFlag = Params.GenNeuralFeaturesFlag;
 Neuro.ZscoreRawFlag     = Params.ZscoreRawFlag;
 Neuro.ZscoreFeaturesFlag= Params.ZscoreFeaturesFlag;
+Neuro.LongTermNorm      = Params.LongTermNorm;
 Neuro.NumFeatureBins    = Params.NumFeatureBins;
 Neuro.DimRed            = Params.DimRed;
 Neuro.CLDA              = Params.CLDA;
@@ -170,6 +171,10 @@ Neuro.FeatureStats.var      = zeros(1,Params.NumFeatures*Params.NumChannels); % 
 Neuro.FeatureStats.Idx      = 0;
 Neuro.FeatureStats.BufSize  = Params.ZBufSize * Params.UpdateRate;
 Neuro.FeatureStats.Buf      = cell(1,Neuro.FeatureStats.BufSize);
+
+if Neuro.LongTermNorm
+    Neuro.LongTermStats = load('long-term_feature_stats.mat')
+end
 
 % create low freq buffers
 Neuro.FilterDataBuf = zeros(Neuro.BufferSamps,Neuro.NumChannels,Neuro.NumBuffer);
@@ -256,7 +261,7 @@ end
 
 %% Start
 try
-    % Baseline 
+    % Baseline
     if Params.BaselineTime>0,
         % turn on update stats flags
         Neuro.UpdateChStatsFlag = true;
@@ -265,7 +270,7 @@ try
 
         % collect data during baseline period
         Neuro = RunBaseline(Params,Neuro);
-        
+
         % set flags back to original vals
         Neuro.UpdateChStatsFlag = Params.UpdateChStatsFlag;
         Neuro.UpdateFeatureStatsFlag = Params.UpdateFeatureStatsFlag;
@@ -273,7 +278,7 @@ try
 
         % save of useful stats and params
         SavePersistence(Params,Neuro,KF,0)
-        
+
     else, % if baseline is set to 0, just load stats
         f=load(fullfile(Params.Persistencedir, 'ch_stats.mat'));
         Neuro.ChStats = f.ch_stats;
@@ -281,25 +286,25 @@ try
         Neuro.FeatureStats = f.feature_stats;
         clear('f');
     end
-    
+
     % Imagined Cursor Movements Loop
     if Params.NumImaginedBlocks>0,
         [Neuro,KF,Params] = RunTask(Params,Neuro,1,KF);
     end
-    
+
     % Adaptation Loop
     if Params.NumAdaptBlocks>0,
         [Neuro,KF,Params] = RunTask(Params,Neuro,2,KF);
     end
-    
+
     % Fixed Decoder Loop
     if Params.NumFixedBlocks>0,
         [Neuro,KF,Params] = RunTask(Params,Neuro,3,KF);
     end
-    
+
     % Pause and Finish!
     ExperimentStop(Params,0);
-    
+
 catch ME, % handle errors gracefully
     Screen('CloseAll')
     for i=length(ME.stack):-1:1,

@@ -3,12 +3,13 @@ function Params = GetNeuroParams(Params)
 % specifically sets params related to the neural processing pipeline
 
 Params.ZBufSize = 120; % secs
-Params.ZscoreRawFlag = true;
+Params.ZscoreRawFlag = false;
 Params.UpdateChStatsFlag = false;
-Params.ZscoreFeaturesFlag = true;
+Params.ZscoreFeaturesFlag = false;
 Params.UpdateFeatureStatsFlag = false;
 Params.SaveRaw = true;
 Params.SaveProcessed = false;
+Params.LongTermNorm = true;
 
 Params.DimRed.Flag = false;
 Params.DimRed.InitMode = 2; % 1-use imagined mvmts, 2-choose dir
