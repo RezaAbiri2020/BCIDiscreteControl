@@ -32,7 +32,7 @@ Params.CueTextFlag          = false;
 Params.DrawFormattedText    = true;
 
 %% Cursor Velocity
-Params.Gain                     = 8;
+Params.Gain                     = 7;
 Params.OptimalVeloctityMode     = 1; % 1-vector to target, 2-LQR
 Params.VelocityTransformFlag    = false;
 Params.MaxVelocityFlag          = false;
@@ -40,7 +40,7 @@ Params.MaxVelocity              = 200;
 
 %% Cursor Click
 Params.ClickerBins = 1; % set to -1 to use target hold time instead of click
-Params.DecisionBoundary= -0.4;
+Params.DecisionBoundary= -0.5;
 Params.ClickerDataCollection = false; % if true, does not use clicker, freezes cursor when in target
 if Params.ClickerDataCollection,
     Params.ClickerBins = -1; % must override to not use clicker
@@ -93,8 +93,8 @@ Params.DrawVelCommand.Rect = [-425,-425,-350,-350];
 %% Trial and Block Types
 Params.NumImaginedBlocks    = 0;
 Params.NumAdaptBlocks       = 0;
-Params.NumFixedBlocks       = 10;
-Params.NumTrialsPerBlock    = 50;
+Params.NumFixedBlocks       = 50;
+Params.NumTrialsPerBlock    = 10;
 
 %% CLDA Parameters
 TypeStrs                = {'none','refit','smooth_batch','rml'};

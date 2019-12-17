@@ -2,7 +2,7 @@ function Params = GetNeuroParams(Params)
 % Params = GetNeuroParams(Params)
 % specifically sets params related to the neural processing pipeline
 
-Params.ZBufSize = 120; % secs
+Params.ZBufSize = 1; % secs
 Params.ZscoreRawFlag = true;
 Params.UpdateChStatsFlag = false;
 Params.ZscoreFeaturesFlag = true;
