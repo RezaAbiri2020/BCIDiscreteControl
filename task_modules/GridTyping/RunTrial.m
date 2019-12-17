@@ -79,10 +79,17 @@ if ~Data.ErrorID,
                 Cursor.LastUpdateTime = tim;
                 
                 Data.NeuralTime(1,end+1) = tim;
+                
+                fprintf('NeuroPipeline:\n') %%%
+                tic; %%%%
                 [Neuro,Data] = NeuroPipeline(Neuro,Data,Params);
+                toc %%%%
                 
                 if Params.ClickerBins ~= -1,
+                    fprintf('Clicker:\n') %%%
+                    tic; %%%%
                     UpdateClicker(Params, Neuro, Clicker)
+                    toc %%%%
                 end
                 if all(Cursor.ClickState == 0), % not clicking -> update cursor state
                     % freeze cursor for clicker data collect mode
@@ -90,7 +97,10 @@ if ~Data.ErrorID,
                             InTargetKeyboard(Cursor,Params.ReachTargetWindows)==Data.TargetID,
                         Cursor.State(3:4) = 0;
                     else,
+                        fprintf('KF Update:\n') %%%
+                        tic; %%%
                         KF = UpdateCursor(Params,Neuro,TaskFlag,ReachTargetPos,KF);
+                        toc
                     end
                 end
                 % save kalman filter
@@ -152,6 +162,8 @@ if ~Data.ErrorID,
             GridRect(:,[1,3]) = GridRect(:,[1,3]) + Params.Center(1); % add x-pos
             GridRect(:,[2,4]) = GridRect(:,[2,4]) + Params.Center(2); % add y-pos
             
+            fprintf('DrawKeyboard\n') %%%
+            tic; %%%
             Screen('FillRect', Params.WPTR, ...
                GridCol', GridRect');
             if Params.ShowNextTarget,
@@ -159,19 +171,31 @@ if ~Data.ErrorID,
                 Screen('FrameRect', Params.WPTR, ...
                     Params.OutTargetColor', FrameRect', Params.FrameSize);
             end
+            toc %%%
+            
+            fprintf('DrawCursor\n') %%%
+            tic; %%%
             Screen('FillOval', Params.WPTR, ...
                 CursorCol', CursorRect')
-            
+            toc %%%
             % draw typing text here
+            
+            fprintf('UpdateKeyboard:\n') %%%
+            tic; %%%
             Params = UpdateKeyboard(Params);
+            toc %%%
             if Params.CueTextFlag,
                 DrawFormattedText(Params.WPTR, Data.TargetCharStr, ...
                     'center', 'center', 255);
             end
             
+            fprintf('Flip:\n') %%%
+            tic; %%%
             Screen('DrawingFinished', Params.WPTR);
             Screen('Flip', Params.WPTR);
+            toc %%%
             
+            fprintf('\n') %%%
         end
         
         % end if takes too long

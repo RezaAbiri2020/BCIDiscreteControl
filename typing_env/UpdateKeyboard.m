@@ -8,6 +8,9 @@ p.addRequired('Params', @(x) isstruct(x) && isfield(x, 'Keyboard'))
 p.CaseSensitive = false;
 parse(p, Params)
 
+%%%
+% Screen('Preference', 'TextRenderer', 0);
+
 Pos = Params.Keyboard.Pos;
 switch Params.Keyboard.State.Mode
     case 'End'
@@ -35,5 +38,6 @@ switch Params.Keyboard.State.Mode
         if ~isempty(Pos.B_Arrow), DrawArrow(Params, Pos.B_Arrow, 'L'); end
 end
 
-
+%%%
+% Screen('Preference', 'TextRenderer', 1);
 end  % function

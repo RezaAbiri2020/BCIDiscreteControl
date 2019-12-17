@@ -33,7 +33,7 @@ Params.CueTextFlag          = false;
 Params.CueTarget            = false;
 
 %% Cursor Velocity
-Params.Gain                     = 2; %10;
+Params.Gain                     = 6; %10;
 Params.OptimalVeloctityMode     = 1; % 1-vector to target, 2-LQR
 Params.VelocityTransformFlag    = false;
 Params.MaxVelocityFlag          = false;
@@ -41,7 +41,7 @@ Params.MaxVelocity              = 200;
 
 %% Cursor Click
 Params.ClickerBins = 1; % set to -1 to use target hold time instead of click
-Params.DecisionBoundary= -0.5;
+Params.DecisionBoundary= -0.65;
 Params.ClickerDataCollection = false; % if true, does not use clicker, freezes cursor when in target
 if Params.ClickerDataCollection,
     Params.ClickerBins = -1; % must override to not use clicker

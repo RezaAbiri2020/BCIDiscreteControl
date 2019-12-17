@@ -1047,6 +1047,8 @@ patient_corpus = {
     'today',
     'doing',
     'job',
+    'holidays',
+    'holiday'
 };
 
 n_patient_corpus = length(patient_corpus);

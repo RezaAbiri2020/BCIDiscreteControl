@@ -29,7 +29,7 @@ Params.UseFeatureMask       = true;
 Params.GenNeuralFeaturesFlag= false; % if blackrock is off, automatically sets to true
 
 Params.CueTextFlag          = false;
-Params.DrawFormattedText    = true;
+Params.DrawFormattedText    = false;
 
 %% Cursor Velocity
 Params.Gain                     = 7;
@@ -56,7 +56,7 @@ Params.UpdateRate = 10; % Hz
 %% Targets
 Params.ShowNextTarget   = false; % displays next target as a frame
 Params.FrameSize        = 5;
-Params.TargetSize       = 50; % useful for clda / determining optimal velocity  
+Params.TargetSize       = 50; % useful for clda / determining optimal velocity
 
 Params.GridColor        = [100,100,100];
 Params.OutTargetColor   = [55,255,0];

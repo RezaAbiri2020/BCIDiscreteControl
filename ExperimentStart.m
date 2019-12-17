@@ -20,7 +20,7 @@ KbName('UnifyKeyNames');
 % Deal with inputs
 valid_tasks = {...
     'CenterOut',...
-    'CenterOut1D',...  
+    'CenterOut1D',...
     'GridTask',...
     'GridTyping',...
     'RadialTask',...
@@ -77,6 +77,8 @@ Params = LoadFeatureMask(Params);
 if Params.DEBUG, Params.Verbose = true;
 else, Params.Verbose = false;
 end
+
+Params.Verbose = true;
 
 %% Data Saving
 now = datetime; % get today's date
@@ -256,7 +258,7 @@ end
 
 %% Start
 try
-    % Baseline 
+    % Baseline
     if Params.BaselineTime>0,
         % turn on update stats flags
         Neuro.UpdateChStatsFlag = true;
@@ -265,7 +267,7 @@ try
 
         % collect data during baseline period
         Neuro = RunBaseline(Params,Neuro);
-        
+
         % set flags back to original vals
         Neuro.UpdateChStatsFlag = Params.UpdateChStatsFlag;
         Neuro.UpdateFeatureStatsFlag = Params.UpdateFeatureStatsFlag;
@@ -273,7 +275,7 @@ try
 
         % save of useful stats and params
         SavePersistence(Params,Neuro,KF,0)
-        
+
     else, % if baseline is set to 0, just load stats
         f=load(fullfile(Params.Persistencedir, 'ch_stats.mat'));
         Neuro.ChStats = f.ch_stats;
@@ -281,25 +283,25 @@ try
         Neuro.FeatureStats = f.feature_stats;
         clear('f');
     end
-    
+
     % Imagined Cursor Movements Loop
     if Params.NumImaginedBlocks>0,
         [Neuro,KF,Params] = RunTask(Params,Neuro,1,KF);
     end
-    
+
     % Adaptation Loop
     if Params.NumAdaptBlocks>0,
         [Neuro,KF,Params] = RunTask(Params,Neuro,2,KF);
     end
-    
+
     % Fixed Decoder Loop
     if Params.NumFixedBlocks>0,
         [Neuro,KF,Params] = RunTask(Params,Neuro,3,KF);
     end
-    
+
     % Pause and Finish!
     ExperimentStop(Params,0);
-    
+
 catch ME, % handle errors gracefully
     Screen('CloseAll')
     for i=length(ME.stack):-1:1,
