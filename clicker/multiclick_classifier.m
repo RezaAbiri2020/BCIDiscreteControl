@@ -23,7 +23,7 @@ elseif distance_from_boundary>0.2, % clicking
     decision = 2;
 end
 
-distance_from_boundary
+% distance_from_boundary
 
 end % multiclick_classifier
 

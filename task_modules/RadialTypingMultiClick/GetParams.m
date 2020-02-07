@@ -58,7 +58,7 @@ Params.UpdateRate = 10; % Hz
 %% Targets: radial layout
 Params.NumReachTargets   = 4;
 Params.TargetSpacing     = 10; % px
-Params.OuterCircleRadius = 350; % defines outer edge of target
+Params.OuterCircleRadius = 600; % defines outer edge of target
 Params.InnerCircleRadius =175; % defines inner edge of target
 Params.ReachTargetRadius = .5*(Params.InnerCircleRadius + Params.OuterCircleRadius);
 
@@ -119,7 +119,7 @@ Params.DrawVelCommand.Rect = [-425,-425,-350,-350];
 %% Trial and Block Types
 Params.NumImaginedBlocks    = 0;
 Params.NumAdaptBlocks       = 0;
-Params.NumFixedBlocks       = 5;
+Params.NumFixedBlocks       = 3;
 Params.NumTrialsPerBlock    = 10;
 
 %% CLDA Parameters
