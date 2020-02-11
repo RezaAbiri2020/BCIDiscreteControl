@@ -77,14 +77,14 @@ if ~Data.ErrorID,
                 dT = tim-Cursor.LastUpdateTime;
                 dT_vec(end+1) = dT;
                 Cursor.LastUpdateTime = tim;
-                
+
                 Data.NeuralTime(1,end+1) = tim;
                 [Neuro,Data] = NeuroPipeline(Neuro,Data,Params);
-                
+
                 if Params.ClickerBins ~= -1,
                     UpdateMultiClicker(Params, Neuro, Clicker)
                 end
-                
+
                 if true%all(Cursor.ClickState == 0), % not clicking -> update cursor state
                     % freeze cursor for clicker data collect mode
                     if Params.ClickerDataCollection && ...
@@ -94,7 +94,7 @@ if ~Data.ErrorID,
                         KF = UpdateCursor(Params,Neuro,TaskFlag,ReachTargetPos,KF);
                     end
                 end
-                
+
                 % save kalman filter
                 if Params.ControlMode>=3 && TaskFlag>1 && Params.SaveKalmanFlag,
                     Data.KalmanGain{end+1} = [];
@@ -138,15 +138,18 @@ if ~Data.ErrorID,
 %                 else,
 %                     CursorCol = Params.CursorColor;
 %                 end
+                if (TargetID==Data.TargetID) && (Data.TargetCharID==Data.SelectedTargetCharID),
+                    CursorCol = Params.InTargetColor;
+                end
             end
-            
+
             % start counting time if cursor is in any target
             if TargetID==Data.TargetID,
                 InTargetTotalTime = InTargetTotalTime + dt;
             else
                 InTargetTotalTime = 0;
             end
-            
+
             % draw target triangles
             for i=1:Params.NumReachTargets,
                 % center vertices to define triangle for each target
@@ -170,14 +173,14 @@ if ~Data.ErrorID,
             % draw cursor
             Screen('FillOval', Params.WPTR, ...
                 CursorCol', CursorRect')
-            
+
             % draw typing text here
             Params = UpdateKeyboard(Params);
             if Params.CueTextFlag,
                 DrawFormattedText(Params.WPTR, Data.TargetCharStr, ...
                     'center', 'center', 255);
             end
-            
+
             Screen('DrawingFinished', Params.WPTR);
             Screen('Flip', Params.WPTR);
 
@@ -192,7 +195,7 @@ if ~Data.ErrorID,
             Data.SelectedTargetPosition = NaN;
             fprintf('ERROR: %s\n',Data.ErrorStr)
         end
-        
+
         % end if clicks in a target
         %if any(Cursor.ClickState==Params.ClickerBins) && TargetID~=0,
         if any(Cursor.ClickState==Params.ClickerBins) && TargetID==Data.TargetID,
@@ -204,7 +207,7 @@ if ~Data.ErrorID,
                 Data.ErrorStr = 'WrongTarget';
             end
         end
-        
+
         % end if in target for hold time (not using clicker)
         if (InTargetTotalTime>=Params.TargetHoldTime) && (Params.ClickerBins==-1),
             done = 1;
@@ -229,7 +232,7 @@ if ~Data.ErrorID,
                 Data.ErrorStr = 'WrongCharacter';
             end
         end
-        
+
     end % Reach Target Loop
 end % only complete if no errors
 
