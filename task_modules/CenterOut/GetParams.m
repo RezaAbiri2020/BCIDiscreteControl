@@ -13,7 +13,9 @@ switch Params.ControlMode,
 end
 
 %% Control
-Params.CenterReset      = false; % if true, cursor automatically is at center at trial start
+Params.DecisionTime     =5;  % th time to decide on which target to jump and give neurofeedback
+Params.NeurofeedbackTime=3;
+Params.CenterReset      = true; % if true, cursor automatically is at center at trial start
 Params.Assistance       = 0; %0.05; % value btw 0 and 1, 1 full assist
 Params.DaggerAssist 	= false;
 
@@ -28,14 +30,14 @@ Params.UseFeatureMask       = true;
 Params.GenNeuralFeaturesFlag= false; % if blackrock is off, automatically sets to true
 
 %% Cursor Velocity
-Params.Gain                     = 7;
+Params.Gain                     = 1;
 Params.OptimalVeloctityMode     = 1; % 1-vector to target, 2-LQR
 Params.VelocityTransformFlag    = false;
 Params.MaxVelocityFlag          = false;
 Params.MaxVelocity              = 200;
 
 %% Sync to Blackrock
-Params.ArduinoSync = true;
+Params.ArduinoSync =false;
 
 %% Timing
 Params.ScreenRefreshRate = 10; % Hz
@@ -43,6 +45,7 @@ Params.UpdateRate = 10; % Hz
 
 %% Targets
 Params.TargetSize = 30;
+Params.AllPossibleTargetColor=[128 128 128];
 Params.OutTargetColor = [55,255,0];
 Params.InTargetColor = [255,55,0];
 
@@ -89,8 +92,8 @@ Params.DrawVelCommand.Rect = [-425,-425,-350,-350];
 
 %% Trial and Block Types
 Params.NumImaginedBlocks    = 0;
-Params.NumAdaptBlocks       = 3;
-Params.NumFixedBlocks       = 2;
+Params.NumAdaptBlocks       = 0;
+Params.NumFixedBlocks       = 1;
 Params.NumTrialsPerBlock    = length(Params.ReachTargetAngles);
 Params.TargetSelectionFlag  = 1; % 1-pseudorandom, 2-random, 3-repeat, 4-sample vector
 switch Params.TargetSelectionFlag,
@@ -141,15 +144,15 @@ switch Params.CLDA.AdaptType,
 end
 
 %% Hold Times
-Params.TargetHoldTime = .1;
-Params.InterTrialInterval = 0;
+Params.TargetHoldTime = 1; % neurofeedback time.
+Params.InterTrialInterval = 1;
 if Params.CenterReset,
-    Params.InstructedDelayTime = .6;
+    Params.InstructedDelayTime = 2; % instructing the target; showing both cursor and target in fixed position.
 else,
     Params.InstructedDelayTime = 0;
 end
 Params.MaxStartTime = 25;
-Params.MaxReachTime = 20;
+Params.MaxReachTime = 10;
 Params.InterBlockInterval = 10; % 0-10s, if set to 10 use instruction screen
 Params.ImaginedMvmtTime = 3;
 

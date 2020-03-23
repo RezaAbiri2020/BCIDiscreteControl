@@ -15,7 +15,7 @@ function KF = UpdateCursor(Params,Neuro,TaskFlag,TargetPos,KF)
 global Cursor
 
 % query optimal control policy
-Vopt = OptimalCursorUpdate(Params,TargetPos);
+%Vopt = OptimalCursorUpdate(Params,TargetPos);
 
 if TaskFlag==1, % do nothing during imagined movements
     return;
@@ -42,116 +42,69 @@ switch Cursor.ControlMode,
         Cursor.IntendedState(3:4) = Vopt; % update vel w/ optimal vel
         
     case 2, % Use Mouse Position as a Velocity Input (Center-Joystick)
-        X0 = Cursor.State;
+        X0_Cursor = Cursor.State; % initial state, useful for assistance
+        X0_Class = Cursor.ClassifierState;
         [x,y] = GetMouse();
         vx = Params.Gain * (x - Params.Center(1));
         vy = Params.Gain * (y - Params.Center(2));
         
-        % assisted velocity
-        if Cursor.Assistance > 0,
-            Vcom = [vx;vy];
-            Vass = Cursor.Assistance*Vopt + (1-Cursor.Assistance)*Vcom;
-        else,
-            Vass = [vx;vy];
-        end
+        % the coordination is y positive to the bottom
+        % So, the angles are in clockwise mode
+        class_angle=atan2d(vy,vx);
+        if class_angle<0
+            class_angle=360+class_angle;
+        end 
         
+        Index=find(min(abs(Params.ReachTargetAngles-class_angle))==abs(Params.ReachTargetAngles-class_angle));
+        % since the angles are in clockwise mode
+        % no minus sign we need for y direction
+        Magnifier=50;
+        vx=Magnifier*cosd(Params.ReachTargetAngles(Index(1)));
+        vy=Magnifier*sind(Params.ReachTargetAngles(Index(1)));
+           
         % update cursor state
-        Cursor.State(1) = Cursor.State(1) + Vass(1)/Params.UpdateRate;
-        Cursor.State(2) = Cursor.State(2) + Vass(2)/Params.UpdateRate;
-        Cursor.State(3) = Vass(1);
-        Cursor.State(4) = Vass(2);
+        Cursor.State(1) = X0_Cursor(1) + vx/Params.UpdateRate;
+        Cursor.State(2) = X0_Cursor(2) + vy/Params.UpdateRate;
+        Cursor.State(3) = vx;
+        Cursor.State(4) = vy;
         
-        % Update Intended Cursor State
-        X = Cursor.State;
-        Vcom = (X(1:2) - X0(1:2))*Params.UpdateRate; % effective velocity command
-        Cursor.IntendedState = Cursor.State; % current true position
-        Cursor.IntendedState(3:4) = Vopt; % update vel w/ optimal vel
+        % Update the classifier states
+        % the chosen class
+        Cursor.ClassifierState(1)=Params.ReachTargetAngles(Index(1));
+        % the cumsum of previous results to current time
+        Cursor.ClassifierState(2)=X0_Class(2)+vx;
+        Cursor.ClassifierState(3)=X0_Class(3)+vy;
         
     case {3,4}, % Kalman Filter Input
-        X0 = Cursor.State; % initial state, useful for assistance
+        X0_Cursor = Cursor.State; % initial state, useful for assistance
+        X0_Class = Cursor.ClassifierState;
         
-        % Kalman Predict Step
-        X = X0;
-        if Neuro.DimRed.Flag,
-            Y = Neuro.NeuralFactors;
-        else,
-            Y = Neuro.MaskedFeatures;
-        end
-        A = KF.A;
-        W = KF.W;
-        P = KF.P;
-        C = KF.C;
-        Q = KF.Q;
+        Features = Neuro.MaskedFeatures;
+        Target_angle=Target_Classifier(Features,Params);
+        % if the angles are in counterclockwise
+        Magnifier=10;
+        vx=Magnifier*cosd(Target_angle);
+        vy=-Magnifier*sind(Target_angle);
+           
+        % update cursor state
+        Cursor.State(1) = X0_Cursor(1) + vx/Params.UpdateRate;
+        Cursor.State(2) = X0_Cursor(2) + vy/Params.UpdateRate;
+        Cursor.State(3) = vx;
+        Cursor.State(4) = vy;
         
-        % Kalman Predict Step
-        X = A*X;
-        P = A*P*A' + W;
-        P(1:2,:) = zeros(2,5); % zero out pos and pos-vel terms
-        P(:,1:2) = zeros(5,2); % innovation from refit
+        % Update the classifier states
+        % the chosen class
+        Cursor.ClassifierState(1)=Params.ReachTargetAngles(Index(1));
+        % the cumsum of previous results to current time
+        Cursor.ClassifierState(2)=X0_Class(2)+vx;
+        Cursor.ClassifierState(3)=X0_Class(3)+vy;
         
-        % Kalman Update Step
-        K = P*C'/(C*P*C' + Q);
-        X = X + K*(Y - C*X);
-        P = P - K*C*P;
-        
-        % Store Params
-        Cursor.State = X;
-        KF.P = P;
-        KF.K = K;
-        
-        % assisted velocity
-        Vcom = X(3:4); % effective velocity command
-        if Cursor.Assistance > 0,
-            % Vass w/ vector avg
-            %Vass = Cursor.Assistance*Vopt + (1-Cursor.Assistance)*Vcom;
-            
-            if ~Params.DaggerAssist, % Vass w/ same speed
-                norm_vcom = norm(Vcom);
-                Vass = Cursor.Assistance*Vopt + (1-Cursor.Assistance)*Vcom;
-                Vass = norm_vcom * Vass / norm(Vass);
-            else, % Dagger Assist
-                sample_optimal = rand(1)<Cursor.Assistance;
-                if sample_optimal,
-                    Vass = Vopt;
-                else, % sample regular
-                    Vass = Vcom;
-                end
-            end
-            
-            % update cursor state
-            %Cursor.State(1) = X0(1) + Vass(1)/Params.UpdateRate;
-            %Cursor.State(2) = X0(2) + Vass(2)/Params.UpdateRate;
-            Cursor.State(3) = Vass(1);
-            Cursor.State(4) = Vass(2);
-        end
-        
-        % Update Intended Cursor State
-        Cursor.IntendedState = Cursor.State; % current true position
-        Cursor.IntendedState(3:4) = Vopt; % update vel w/ optimal vel
-        
-        % Apply Velocity Transform
-        if Params.VelocityTransformFlag,
-            [Vx,Vy] = VelocityTransform(Cursor.State(3),Cursor.State(4),Params.Gain);
-            Cursor.State(3) = Vx;
-            Cursor.State(4) = Vy;
-        elseif Params.MaxVelocityFlag,
-            speed = norm(Cursor.State(3:4));
-            new_speed = max([speed,Params.MaxVelocity]);
-            Cursor.State(3) = Cursor.State(3) * new_speed / speed;
-            Cursor.State(4) = Cursor.State(4) * new_speed / speed;
-        end
-        
-        % Update KF Params (RML & Adaptation Block)
-        if KF.CLDA.Type==3 && TaskFlag==2,
-            KF = UpdateRmlKF(KF,Cursor.IntendedState,Y,Params,TaskFlag);
-        elseif KF.CLDA.Type==3 && TaskFlag==3 && Params.CLDA.FixedRmlFlag, % (RML & Fixed)
-            KF = UpdateRmlKF(KF,Cursor.State,Y,Params,TaskFlag);
-        end
         
 end
 
 % update effective velocity command for screen output
 try,
+    Vcom=[vx;vy];
     Cursor.Vcommand = Vcom;
 catch,
     Cursor.Vcommand = [0,0];
